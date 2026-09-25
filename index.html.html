@@ -90,12 +90,30 @@
     border: 1px solid var(--border);
     border-left: 3px solid var(--success);
     border-radius: 10px;
-    padding: 10px 12px;
+    overflow: hidden;
+    animation: slideIn .25s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .session-item.nuevo {
+    border-left-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(37,99,235,.25);
+  }
+
+  .si-header {
     display: flex;
     align-items: center;
     gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    user-select: none;
   }
-  .session-item .si-num {
+
+  .si-num {
     background: var(--success);
     color: #fff;
     font-size: 11px;
@@ -105,11 +123,52 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .session-item .si-info { flex: 1; min-width: 0; }
-  .session-item .si-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .session-item .si-dni { font-size: 11px; color: var(--text-muted); }
-  .session-item .si-del { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 2px 6px; flex-shrink: 0; }
-  .session-item .si-del:hover { color: var(--danger); }
+
+  .session-item.nuevo .si-num { background: var(--accent); }
+
+  .si-info { flex: 1; min-width: 0; }
+  .si-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .si-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
+
+  .si-toggle { color: var(--text-muted); font-size: 13px; flex-shrink: 0; transition: transform .2s; }
+  .si-toggle.open { transform: rotate(180deg); }
+
+  .si-del { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 2px 6px; flex-shrink: 0; }
+  .si-del:hover { color: var(--danger); }
+
+  /* Panel de datos expandidos */
+  .si-datos {
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--surface2);
+  }
+
+  .si-datos.open { display: flex; }
+
+  .si-field { display: flex; flex-direction: column; gap: 1px; }
+  .si-field label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); }
+  .si-field span { font-size: 14px; font-weight: 500; }
+
+  .si-field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .si-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .si-copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    flex: 1;
+  }
+  .si-copy-btn:hover { background: var(--border); }
+  .si-copy-btn.del { color: var(--danger); }
 
   /* BOTONES */
   .btn { width: 100%; padding: 13px; border-radius: 10px; border: none; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
@@ -221,12 +280,13 @@
 
   <!-- PANEL MANUAL -->
   <div class="panel" id="panel-manual">
+    <p class="section-title">Datos del DNI</p>
     <div class="form-group">
       <label>Apellido</label>
       <input type="text" id="m-apellido" placeholder="GARCIA" autocomplete="off">
     </div>
     <div class="form-group">
-      <label>Nombre</label>
+      <label>Nombre/s</label>
       <input type="text" id="m-nombre" placeholder="JUAN PABLO" autocomplete="off">
     </div>
     <div class="form-row">
@@ -245,13 +305,45 @@
         <input type="text" id="m-nac" placeholder="01/01/1990">
       </div>
       <div class="form-group">
-        <label>Vencimiento</label>
+        <label>Fecha Vencimiento</label>
         <input type="text" id="m-venc" placeholder="01/01/2030">
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ejemplar / Trámite N°</label>
+        <input type="text" id="m-ejemplar" placeholder="00001" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>Código de trámite</label>
+        <input type="text" id="m-codigo" placeholder="00000000000" inputmode="numeric">
+      </div>
+    </div>
     <div class="form-group">
-      <label>Ejemplar / Trámite</label>
-      <input type="text" id="m-ejemplar" placeholder="00001" autocomplete="off">
+      <label>Nacionalidad</label>
+      <input type="text" id="m-nacionalidad" placeholder="ARGENTINA" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Lugar de nacimiento</label>
+      <input type="text" id="m-lugar" placeholder="SALTA" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Domicilio</label>
+      <input type="text" id="m-domicilio" placeholder="AV. BELGRANO 1234" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Localidad</label>
+        <input type="text" id="m-localidad" placeholder="SALTA" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Provincia</label>
+        <input type="text" id="m-provincia" placeholder="SALTA" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Cuil / Cuit</label>
+      <input type="text" id="m-cuil" placeholder="20-12345678-9" inputmode="numeric">
     </div>
     <button class="btn btn-primary" onclick="guardarManual()">Agregar a sesión</button>
   </div>
@@ -298,13 +390,20 @@ function parsearQR(texto) {
   const posibleDNI = limpiar(p[4] || p[3]);
   if (!/^\d{6,8}$/.test(posibleDNI.replace(/\./g,''))) return null;
   return {
-    apellido:    limpiar(p[1] || p[0]),
-    nombre:      limpiar(p[2] || p[1]),
-    sexo:        limpiar(p[3] || ''),
-    dni:         posibleDNI.replace(/\./g,''),
-    ejemplar:    limpiar(p[5] || ''),
-    nacimiento:  limpiar(p[6] || ''),
-    vencimiento: limpiar(p[7] || ''),
+    apellido:      limpiar(p[1] || p[0]),
+    nombre:        limpiar(p[2] || p[1]),
+    sexo:          limpiar(p[3] || ''),
+    dni:           posibleDNI.replace(/\./g,''),
+    ejemplar:      limpiar(p[5] || ''),
+    nacimiento:    limpiar(p[6] || ''),
+    vencimiento:   limpiar(p[7] || ''),
+    codigo:        limpiar(p[8] || ''),
+    nacionalidad:  '',
+    lugar:         '',
+    domicilio:     '',
+    localidad:     '',
+    provincia:     '',
+    cuil:          '',
     fuente: 'QR',
     ts: new Date().toISOString()
   };
@@ -328,13 +427,20 @@ function parsearPDF417(texto) {
 
   // Heurística de posición para PDF417 viejo
   return {
-    apellido:    limpiar(p[0] || ''),
-    nombre:      limpiar(p[1] || ''),
-    dni:         limpiar(p[dniIdx]).replace(/\./g,''),
-    sexo:        limpiar(p[dniIdx + 1] || ''),
-    nacimiento:  limpiar(p[dniIdx + 2] || ''),
-    vencimiento: limpiar(p[dniIdx + 3] || ''),
-    ejemplar:    limpiar(p[dniIdx + 4] || ''),
+    apellido:      limpiar(p[0] || ''),
+    nombre:        limpiar(p[1] || ''),
+    dni:           limpiar(p[dniIdx]).replace(/\./g,''),
+    sexo:          limpiar(p[dniIdx + 1] || ''),
+    nacimiento:    limpiar(p[dniIdx + 2] || ''),
+    vencimiento:   limpiar(p[dniIdx + 3] || ''),
+    ejemplar:      limpiar(p[dniIdx + 4] || ''),
+    codigo:        limpiar(p[dniIdx + 5] || ''),
+    nacionalidad:  '',
+    lugar:         '',
+    domicilio:     '',
+    localidad:     '',
+    provincia:     '',
+    cuil:          '',
     fuente: 'PDF417',
     ts: new Date().toISOString()
   };
@@ -417,11 +523,20 @@ function onQRSuccess(decodedText) {
   cooldown = true;
   setTimeout(() => { cooldown = false; }, 2000);
 
+  const nuevoIdx = sesionDNI.length;
   sesionDNI.push(datos);
   renderSessionBar();
-  renderSessionList();
+  renderSessionList(nuevoIdx);
 
   document.getElementById('session-section').style.display = 'block';
+
+  // Quitar resaltado "nuevo" después de 3s
+  setTimeout(() => {
+    const el = document.getElementById(`si-${nuevoIdx}`);
+    if (el) el.classList.remove('nuevo');
+    const num = el && el.querySelector('.si-num');
+    if (num) num.style.background = 'var(--success)';
+  }, 3000);
 
   if (sesionDNI.length >= MAX_DNI) {
     pausarCamara();
@@ -456,17 +571,68 @@ function renderSessionBar() {
   }).join('');
 }
 
-function renderSessionList() {
+function renderSessionList(nuevoIdx = -1) {
   const cont = document.getElementById('session-list');
-  cont.innerHTML = sesionDNI.map((d, i) => `
-    <div class="session-item">
-      <div class="si-num">${i + 1}</div>
-      <div class="si-info">
-        <div class="si-name">${d.apellido}, ${d.nombre}</div>
-        <div class="si-dni">DNI ${d.dni} · ${d.sexo} · Nac. ${d.nacimiento} <span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:10px;padding:1px 5px;margin-left:2px">${d.fuente}</span></div>
+  cont.innerHTML = sesionDNI.map((d, i) => {
+    const esNuevo = i === nuevoIdx;
+    const id = `si-datos-${i}`;
+    return `
+    <div class="session-item ${esNuevo ? 'nuevo' : ''}" id="si-${i}">
+      <div class="si-header" onclick="toggleDatos(${i})">
+        <div class="si-num">${i + 1}</div>
+        <div class="si-info">
+          <div class="si-name">${d.apellido}, ${d.nombre}</div>
+          <div class="si-meta">
+            <span>DNI ${d.dni}</span>
+            ${d.sexo ? `<span>${d.sexo}</span>` : ''}
+            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:10px;padding:0 4px">${d.fuente}</span>
+          </div>
+        </div>
+        <span class="si-toggle ${esNuevo ? 'open' : ''}" id="toggle-${i}">▼</span>
+        <button class="si-del" onclick="event.stopPropagation(); quitarDeSesion(${i})" title="Quitar">✕</button>
       </div>
-      <button class="si-del" onclick="quitarDeSesion(${i})" title="Quitar">✕</button>
-    </div>`).join('');
+      <div class="si-datos ${esNuevo ? 'open' : ''}" id="${id}">
+        <div class="si-field-row">
+          <div class="si-field"><label>Apellido</label><span>${d.apellido || '—'}</span></div>
+          <div class="si-field" style="grid-column:span 2"><label>Nombre/s</label><span>${d.nombre || '—'}</span></div>
+        </div>
+        <div class="si-field-row">
+          <div class="si-field"><label>DNI N°</label><span>${d.dni || '—'}</span></div>
+          <div class="si-field"><label>Sexo</label><span>${d.sexo || '—'}</span></div>
+          <div class="si-field"><label>Ejemplar</label><span>${d.ejemplar || '—'}</span></div>
+        </div>
+        <div class="si-field-row">
+          <div class="si-field"><label>Nacimiento</label><span>${d.nacimiento || '—'}</span></div>
+          <div class="si-field"><label>Vencimiento</label><span>${d.vencimiento || '—'}</span></div>
+          <div class="si-field"><label>Fuente</label><span>${d.fuente}</span></div>
+        </div>
+        ${d.codigo ? `<div class="si-field"><label>Código de trámite</label><span>${d.codigo}</span></div>` : ''}
+        ${d.nacionalidad ? `<div class="si-field-row"><div class="si-field"><label>Nacionalidad</label><span>${d.nacionalidad}</span></div><div class="si-field" style="grid-column:span 2"><label>Lugar de nacimiento</label><span>${d.lugar || '—'}</span></div></div>` : ''}
+        ${d.domicilio ? `<div class="si-field"><label>Domicilio</label><span>${d.domicilio}${d.localidad ? ', ' + d.localidad : ''}${d.provincia ? ' — ' + d.provincia : ''}</span></div>` : ''}
+        ${d.cuil ? `<div class="si-field"><label>CUIL / CUIT</label><span>${d.cuil}</span></div>` : ''}
+        <div class="si-actions">
+          <button class="si-copy-btn" onclick="copiarDatos(${JSON.stringify(d).replace(/"/g,'&quot;')})">Copiar</button>
+          <button class="si-copy-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Si hay nuevo, hacer scroll hasta él
+  if (nuevoIdx >= 0) {
+    setTimeout(() => {
+      const el = document.getElementById(`si-${nuevoIdx}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+}
+
+function toggleDatos(i) {
+  const panel = document.getElementById(`si-datos-${i}`);
+  const toggle = document.getElementById(`toggle-${i}`);
+  const item = document.getElementById(`si-${i}`);
+  const abierto = panel.classList.toggle('open');
+  toggle.classList.toggle('open', abierto);
 }
 
 function quitarDeSesion(idx) {
@@ -519,22 +685,29 @@ function guardarManual() {
 
   const datos = {
     apellido, nombre,
-    sexo:        document.getElementById('m-sexo').value.trim().toUpperCase(),
+    sexo:         document.getElementById('m-sexo').value.trim().toUpperCase(),
     dni,
-    ejemplar:    document.getElementById('m-ejemplar').value.trim(),
-    nacimiento:  document.getElementById('m-nac').value.trim(),
-    vencimiento: document.getElementById('m-venc').value.trim(),
+    ejemplar:     document.getElementById('m-ejemplar').value.trim(),
+    nacimiento:   document.getElementById('m-nac').value.trim(),
+    vencimiento:  document.getElementById('m-venc').value.trim(),
+    codigo:       document.getElementById('m-codigo').value.trim(),
+    nacionalidad: document.getElementById('m-nacionalidad').value.trim().toUpperCase(),
+    lugar:        document.getElementById('m-lugar').value.trim().toUpperCase(),
+    domicilio:    document.getElementById('m-domicilio').value.trim().toUpperCase(),
+    localidad:    document.getElementById('m-localidad').value.trim().toUpperCase(),
+    provincia:    document.getElementById('m-provincia').value.trim().toUpperCase(),
+    cuil:         document.getElementById('m-cuil').value.trim(),
     fuente: 'Manual',
     ts: new Date().toISOString()
   };
 
-  // Agregar a sesión si hay una activa, sino guardar directo
   if (sesionActiva && sesionDNI.length < MAX_DNI) {
     const yaExiste = sesionDNI.some(d => d.dni === datos.dni);
     if (yaExiste) { toast('Ese DNI ya está en la sesión'); return; }
+    const nuevoIdx = sesionDNI.length;
     sesionDNI.push(datos);
     renderSessionBar();
-    renderSessionList();
+    renderSessionList(nuevoIdx);
     document.getElementById('session-section').style.display = 'block';
     switchTab('scan');
     toast('Agregado a la sesión actual');
@@ -545,7 +718,8 @@ function guardarManual() {
     toast('Guardado correctamente');
   }
 
-  ['m-apellido','m-nombre','m-sexo','m-dni','m-ejemplar','m-nac','m-venc']
+  ['m-apellido','m-nombre','m-sexo','m-dni','m-ejemplar','m-nac','m-venc',
+   'm-codigo','m-nacionalidad','m-lugar','m-domicilio','m-localidad','m-provincia','m-cuil']
     .forEach(id => document.getElementById(id).value = '');
 }
 
@@ -575,10 +749,17 @@ function copiarDatos(datos) {
     `APELLIDO: ${datos.apellido}`,
     `NOMBRE: ${datos.nombre}`,
     `DNI: ${datos.dni}`,
-    datos.sexo        ? `SEXO: ${datos.sexo}` : '',
-    datos.nacimiento  ? `NACIMIENTO: ${datos.nacimiento}` : '',
-    datos.vencimiento ? `VENCIMIENTO: ${datos.vencimiento}` : '',
-    datos.ejemplar    ? `EJEMPLAR: ${datos.ejemplar}` : '',
+    datos.sexo         ? `SEXO: ${datos.sexo}` : '',
+    datos.nacimiento   ? `NACIMIENTO: ${datos.nacimiento}` : '',
+    datos.vencimiento  ? `VENCIMIENTO: ${datos.vencimiento}` : '',
+    datos.ejemplar     ? `EJEMPLAR: ${datos.ejemplar}` : '',
+    datos.codigo       ? `CODIGO TRAMITE: ${datos.codigo}` : '',
+    datos.nacionalidad ? `NACIONALIDAD: ${datos.nacionalidad}` : '',
+    datos.lugar        ? `LUGAR NACIMIENTO: ${datos.lugar}` : '',
+    datos.domicilio    ? `DOMICILIO: ${datos.domicilio}` : '',
+    datos.localidad    ? `LOCALIDAD: ${datos.localidad}` : '',
+    datos.provincia    ? `PROVINCIA: ${datos.provincia}` : '',
+    datos.cuil         ? `CUIL/CUIT: ${datos.cuil}` : '',
   ].filter(Boolean).join('\n');
   navigator.clipboard.writeText(txt)
     .then(() => toast('Datos copiados'))
@@ -615,10 +796,13 @@ function exportarTodos() {
   const txt = lista.map((d, i) => [
     `[${i+1}] ${d.apellido}, ${d.nombre}`,
     `DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`,
-    `Ejemplar: ${d.ejemplar} | Fuente: ${d.fuente}`,
+    `Ejemplar: ${d.ejemplar} | Código trámite: ${d.codigo || '—'} | Fuente: ${d.fuente}`,
+    d.nacionalidad  ? `Nacionalidad: ${d.nacionalidad} | Lugar nac.: ${d.lugar || '—'}` : '',
+    d.domicilio     ? `Domicilio: ${d.domicilio}, ${d.localidad || ''} — ${d.provincia || ''}` : '',
+    d.cuil          ? `CUIL/CUIT: ${d.cuil}` : '',
     `Registro: ${new Date(d.ts).toLocaleString('es-AR')}`,
     ''
-  ].join('\n')).join('\n');
+  ].filter(Boolean).join('\n')).join('\n');
   const blob = new Blob([txt], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
