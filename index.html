@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Escáner DNI</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<title>Capturas DNI → Mensaje</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
 <style>
   :root {
@@ -25,78 +24,16 @@
 
   main{flex:1;padding:20px 16px;max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px}
 
-  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .tab-btn{background:none;border:none;color:var(--text-muted);font-size:11px;font-family:var(--font);font-weight:500;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .15s,color .15s}
-  .tab-btn .icon{font-size:16px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .tab-btn{background:none;border:none;color:var(--text-muted);font-size:13px;font-family:var(--font);font-weight:500;padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .15s,color .15s}
+  .tab-btn .icon{font-size:18px}
   .tab-btn.active{background:var(--accent);color:#fff}
   .tab-btn:not(.active):hover{background:var(--surface2);color:var(--text)}
 
   .panel{display:none;flex-direction:column;gap:14px}
   .panel.active{display:flex}
 
-  .session-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px}
-  .session-bar .s-label{font-size:12px;color:var(--text-muted);white-space:nowrap}
-  .session-bar .s-label strong{color:var(--text)}
-  .dots{display:flex;gap:5px;flex:1;overflow:hidden}
-  .dot{width:100%;height:6px;border-radius:3px;background:var(--border);transition:background .2s}
-  .dot.filled{background:var(--success)}
-  .dot.current{background:var(--accent);animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-
-  .config-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px}
-  .config-row label{font-size:12px;color:var(--text-muted);flex:1}
-  .config-row input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;padding:6px 10px;width:70px;text-align:center;outline:none}
-  .config-row input:focus{border-color:var(--accent-light)}
-
-  .scanner-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
-  #reader{width:100%}
-  #reader video{border-radius:0!important}
-  .scan-hint{text-align:center;color:var(--text-muted);font-size:13px;padding:8px}
-
-  .scan-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:4}
-  .scan-frame{position:relative;width:82%;aspect-ratio:1.586/1;border:1.5px solid rgba(59,130,246,.55);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
-  .scan-frame .c{position:absolute;width:26px;height:26px;border:3px solid #3b82f6}
-  .scan-frame .tl{top:-3px;left:-3px;border-right:none;border-bottom:none;border-top-left-radius:14px}
-  .scan-frame .tr{top:-3px;right:-3px;border-left:none;border-bottom:none;border-top-right-radius:14px}
-  .scan-frame .bl{bottom:-3px;left:-3px;border-right:none;border-top:none;border-bottom-left-radius:14px}
-  .scan-frame .br{bottom:-3px;right:-3px;border-left:none;border-top:none;border-bottom-right-radius:14px}
-  .scan-frame .hint{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;font-weight:600}
-
-  .flash-btn{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:20px;cursor:pointer;z-index:6;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:0;line-height:1}
-  .flash-btn.show{display:flex}
-  .flash-btn.on{background:var(--warn);border-color:var(--warn);box-shadow:0 0 14px rgba(217,119,6,.8)}
-
-  .session-list{display:flex;flex-direction:column;gap:8px}
-  .session-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:10px;overflow:hidden;animation:slideIn .25s ease}
-  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-  .session-item.nuevo{border-left-color:var(--accent);box-shadow:0 0 0 2px rgba(37,99,235,.25)}
-
-  .si-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;user-select:none}
-  .si-num{background:var(--success);color:#fff;font-size:11px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .session-item.nuevo .si-num{background:var(--accent)}
-  .si-info{flex:1;min-width:0}
-  .si-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .si-meta{font-size:11px;color:var(--text-muted);display:flex;gap:8px;flex-wrap:wrap;margin-top:1px}
-  .si-toggle{color:var(--text-muted);font-size:13px;flex-shrink:0;transition:transform .2s}
-  .si-toggle.open{transform:rotate(180deg)}
-  .si-del{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px 6px;flex-shrink:0}
-  .si-del:hover{color:var(--danger)}
-
-  .si-datos{border-top:1px solid var(--border);padding:12px;display:none;flex-direction:column;gap:8px;background:var(--surface2)}
-  .si-datos.open{display:flex}
-  .si-field{display:flex;flex-direction:column;gap:1px}
-  .si-field label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
-  .si-field span{font-size:14px;font-weight:500;word-break:break-word}
-  .si-field input{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:6px 8px;width:100%;outline:none;margin-top:2px}
-  .si-field input:focus{border-color:var(--accent-light)}
-  .si-field select{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:6px 8px;width:100%;outline:none;margin-top:2px}
-  .si-field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .si-actions{display:flex;gap:8px;margin-top:4px}
-  .si-copy-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;flex:1}
-  .si-copy-btn:hover{background:var(--border)}
-  .si-copy-btn.del{color:var(--danger)}
-
-  .btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s}
+  .btn{width:100%;padding:14px;border-radius:10px;border:none;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s}
   .btn:active{transform:scale(.97)}
   .btn-primary{background:var(--accent);color:#fff}
   .btn-primary:hover{background:var(--accent-light)}
@@ -108,24 +45,49 @@
   .btn:disabled{opacity:.4;cursor:not-allowed}
 
   .action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .action-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 
   .form-group{display:flex;flex-direction:column;gap:6px}
   .form-group label{font-size:12px;font-weight:600;color:var(--text-muted)}
-  .form-group input, .form-group textarea, .form-group select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;width:100%;outline:none;transition:border-color .15s}
-  .form-group textarea{font-size:13px;line-height:1.4;resize:vertical;min-height:60px;font-family:ui-monospace,Menlo,Consolas,monospace}
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus{border-color:var(--accent-light)}
-  .form-group input::placeholder, .form-group textarea::placeholder{color:var(--text-muted)}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .form-group textarea{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;padding:10px 12px;width:100%;outline:none;resize:vertical;min-height:60px;transition:border-color .15s}
+  .form-group textarea:focus{border-color:var(--accent-light)}
 
-  .saved-list{display:flex;flex-direction:column;gap:10px}
-  .saved-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
-  .saved-item .s-name{font-size:14px;font-weight:600;word-break:break-word}
-  .saved-item .s-meta{font-size:12px;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap}
-  .saved-item .s-actions{display:flex;gap:8px;margin-top:6px}
-  .mini-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer}
-  .mini-btn:hover{background:var(--border)}
-  .mini-btn.del{color:var(--danger)}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
+
+  /* Lista de personas */
+  .persona{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;animation:slideIn .25s ease}
+  .persona.incompleta{border-left-color:var(--warn)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .persona .p-head{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .persona .p-name{font-size:14px;font-weight:600;word-break:break-word;line-height:1.3}
+  .persona .p-dni{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .persona .p-badge-ok{color:var(--success);font-weight:700;font-size:12px}
+  .persona .p-badge-falta{color:var(--warn);font-weight:700;font-size:11px}
+  .persona .p-del{background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:0 6px;flex-shrink:0}
+  .persona .p-del:hover{color:var(--danger)}
+  .persona .p-field{display:flex;flex-direction:column;gap:3px}
+  .persona .p-field label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)}
+  .persona .p-field input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:7px 9px;width:100%;outline:none}
+  .persona .p-field input:focus{border-color:var(--accent-light)}
+  .persona .p-field select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:7px 9px;width:100%;outline:none}
+  .persona .p-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+  /* Upload zone */
+  .upload-zone{background:var(--surface);border:2px dashed var(--border);border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--surface2)}
+  .upload-zone .uz-icon{font-size:38px;margin-bottom:6px}
+  .upload-zone .uz-title{font-size:14px;font-weight:600;margin-bottom:4px}
+  .upload-zone .uz-sub{font-size:12px;color:var(--text-muted)}
+
+  /* Progreso */
+  .progreso{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:none;flex-direction:column;gap:8px}
+  .progreso.show{display:flex}
+  .progreso .pr-txt{font-size:12px;display:flex;justify-content:space-between;gap:10px}
+  .progreso .pr-txt strong{color:var(--accent-light)}
+  .progreso .pr-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+  .progreso .pr-fill{height:100%;background:var(--accent);width:0%;transition:width .2s}
+
+  /* Preview */
+  .preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text-muted);max-height:300px;overflow:auto}
 
   .empty-state{text-align:center;color:var(--text-muted);font-size:14px;padding:30px 0}
   .empty-state .empty-icon{font-size:36px;margin-bottom:10px}
@@ -133,143 +95,63 @@
   .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;z-index:100;transition:transform .25s ease;pointer-events:none;max-width:calc(100% - 24px);text-align:center}
   .toast.show{transform:translateX(-50%) translateY(0)}
 
-  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
-
-  .msg-person{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-  .msg-person.completada{border-color:var(--success);box-shadow:0 0 0 1px var(--success)}
-  .msg-person .mp-header{display:flex;align-items:center;gap:8px;justify-content:space-between}
-  .msg-person .mp-name{font-size:13px;font-weight:600}
-  .msg-person .mp-dni{font-size:11px;color:var(--text-muted)}
-
-  .preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text-muted);max-height:220px;overflow:auto}
-
-  /* MODAL OCR */
-  .ocr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-  .ocr-overlay.show{display:flex}
-  .ocr-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:14px;text-align:center}
-  .ocr-modal h3{font-size:15px;font-weight:600}
-  .ocr-modal p{font-size:12px;color:var(--text-muted);line-height:1.5}
-  .ocr-spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto;animation:spin 1s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .ocr-bar{background:var(--border);border-radius:4px;height:6px;overflow:hidden}
-  .ocr-bar-fill{background:var(--accent);height:100%;width:0%;transition:width .2s}
-
-  .ocr-result{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:left;font-size:12px;line-height:1.6;max-height:180px;overflow:auto}
-  .ocr-result label{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px}
-  .ocr-result .val{font-size:13px;font-weight:600;margin-bottom:6px;word-break:break-word}
-
-  #reader__scan_region{background:transparent!important}
-  #reader__dashboard{background:var(--surface)!important;color:var(--text-muted)!important;border-top:1px solid var(--border)!important}
-  #reader__dashboard_section_swaplink{color:var(--accent-light)!important}
+  .contador{font-size:12px;color:var(--text-muted);text-align:center}
+  .contador strong{color:var(--text)}
 </style>
 </head>
 <body>
 
 <header>
   <span class="badge">DNI AR</span>
-  <h1>Escáner de Documentos</h1>
+  <h1>Capturas → Mensaje</h1>
 </header>
 
 <main>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('scan')" id="tab-scan"><span class="icon">📷</span>Escanear</button>
-    <button class="tab-btn" onclick="switchTab('manual')" id="tab-manual"><span class="icon">✏️</span>Manual</button>
+    <button class="tab-btn active" onclick="switchTab('capturas')" id="tab-capturas"><span class="icon">📷</span>Capturas</button>
     <button class="tab-btn" onclick="switchTab('mensaje')" id="tab-mensaje"><span class="icon">📝</span>Mensaje</button>
-    <button class="tab-btn" onclick="switchTab('saved')" id="tab-saved"><span class="icon">📋</span>Guardados</button>
   </div>
 
-  <!-- ═══ SCAN ═══ -->
-  <div class="panel active" id="panel-scan">
-    <div class="config-row" id="cfg-row">
-      <label for="cfg-max">Límite por sesión</label>
-      <input type="number" id="cfg-max" min="1" max="100" value="8" inputmode="numeric">
+  <!-- ═══ CAPTURAS ═══ -->
+  <div class="panel active" id="panel-capturas">
+    <div class="upload-zone" id="upload-zone" onclick="abrirSelector()">
+      <div class="uz-icon">📷</div>
+      <div class="uz-title">Agregar capturas del sistema</div>
+      <div class="uz-sub">Tocá para elegir una o varias imágenes</div>
     </div>
+    <input type="file" id="file-input" accept="image/*" multiple style="display:none">
 
-    <div class="session-bar" id="session-bar" style="display:none">
-      <div class="s-label">DNI <strong id="s-count">0</strong> / <span id="s-max">8</span></div>
-      <div class="dots" id="s-dots"></div>
-    </div>
-
-    <div class="scanner-box">
-      <div id="reader"></div>
-      <button id="btn-flash" class="flash-btn" onclick="toggleFlash()" title="Flash" aria-label="Flash">🔦</button>
-      <div class="scan-overlay">
-        <div class="scan-frame">
-          <i class="c tl"></i>
-          <i class="c tr"></i>
-          <i class="c bl"></i>
-          <i class="c br"></i>
-          <div class="hint">Colocá el DNI dentro del recuadro</div>
-        </div>
+    <div class="progreso" id="progreso">
+      <div class="pr-txt">
+        <span id="pr-estado">Procesando...</span>
+        <strong id="pr-num"></strong>
       </div>
-    </div>
-    <p class="scan-hint" id="scan-hint">Configurá el límite e iniciá la sesión para escanear</p>
-
-    <div id="cam-controls">
-      <button class="btn btn-primary" id="btn-start" onclick="startSesion()">Iniciar sesión de escaneo</button>
-      <button class="btn btn-danger"  id="btn-stop"  onclick="pausarCamara()" style="display:none">Pausar cámara</button>
-      <button class="btn btn-primary" id="btn-resume" onclick="reanudarCamara()" style="display:none">Continuar escaneando</button>
+      <div class="pr-bar"><div class="pr-fill" id="pr-fill"></div></div>
     </div>
 
-    <div id="session-section" style="display:none">
-      <p class="section-title" style="margin-bottom:8px">DNI escaneados en esta sesión</p>
-      <div class="session-list" id="session-list"></div>
-      <div class="action-row-3" style="margin-top:4px">
-        <button class="btn btn-success" onclick="guardarSesion()">Guardar todos</button>
-        <button class="btn btn-outline" onclick="irAMensaje()">Ir a Mensaje</button>
-        <button class="btn btn-danger"  onclick="limpiarSesion()" style="font-size:12px">Limpiar</button>
-      </div>
-    </div>
-  </div>
+    <div class="contador" id="contador"></div>
 
-  <!-- ═══ MANUAL ═══ -->
-  <div class="panel" id="panel-manual">
-    <p class="section-title">Datos del DNI</p>
-    <div class="form-group"><label>Apellido</label><input type="text" id="m-apellido" placeholder="GARCIA" autocomplete="off"></div>
-    <div class="form-group"><label>Nombre/s</label><input type="text" id="m-nombre" placeholder="JUAN PABLO" autocomplete="off"></div>
-    <div class="form-row">
-      <div class="form-group"><label>N° DNI</label><input type="text" id="m-dni" placeholder="12345678" inputmode="numeric"></div>
-      <div class="form-group"><label>Sexo</label><input type="text" id="m-sexo" placeholder="M / F" maxlength="1"></div>
+    <div id="lista-personas"></div>
+
+    <div class="action-row" id="acciones-capturas" style="display:none">
+      <button class="btn btn-outline" onclick="irAMensaje()">Ir a Mensaje</button>
+      <button class="btn btn-danger" onclick="borrarTodas()">Borrar todas</button>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Fecha Nacimiento</label><input type="text" id="m-nac" placeholder="01/01/1990"></div>
-      <div class="form-group"><label>Fecha Vencimiento</label><input type="text" id="m-venc" placeholder="01/01/2030"></div>
-    </div>
-    <div class="form-group"><label>Domicilio</label><input type="text" id="m-domicilio" placeholder="AV. BELGRANO 1234" autocomplete="off"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Localidad</label><input type="text" id="m-localidad" placeholder="SALTA" autocomplete="off"></div>
-      <div class="form-group"><label>Provincia</label><input type="text" id="m-provincia" placeholder="SALTA" autocomplete="off"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Código DIC</label>
-        <select id="m-codigo-dic">
-          <option value="">— sin código —</option>
-          <option value="AZUL">AZUL</option>
-          <option value="NEGRO">NEGRO</option>
-          <option value="BLANCO">BLANCO</option>
-          <option value="ROJO">ROJO</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Cuil / Cuit</label><input type="text" id="m-cuil" placeholder="20-12345678-9" inputmode="numeric"></div>
-    </div>
-    <button class="btn btn-primary" onclick="guardarManual()">Agregar a sesión</button>
   </div>
 
   <!-- ═══ MENSAJE ═══ -->
   <div class="panel" id="panel-mensaje">
-    <button class="btn btn-warn" id="btn-ocr" onclick="abrirLectorCaptura()">📷 Leer captura del sistema (SIPS)</button>
-
     <p class="section-title">Encabezado</p>
     <div class="form-group">
-      <textarea id="msg-head" rows="14" placeholder="Escribí el encabezado del mensaje..."></textarea>
+      <textarea id="msg-head" rows="14"></textarea>
     </div>
 
-    <p class="section-title">Personas identificadas <span id="msg-count" style="color:var(--accent-light)"></span></p>
+    <p class="section-title">Personas <span id="msg-count" style="color:var(--accent-light)"></span></p>
     <div id="msg-personas"></div>
 
     <p class="section-title">Pie / Informante</p>
     <div class="form-group">
-      <textarea id="msg-foot" rows="3" placeholder="Escribí el pie del mensaje..."></textarea>
+      <textarea id="msg-foot" rows="3"></textarea>
     </div>
 
     <div class="action-row">
@@ -282,44 +164,15 @@
       <div class="preview-box" id="preview-box"></div>
     </div>
   </div>
-
-  <!-- ═══ SAVED ═══ -->
-  <div class="panel" id="panel-saved">
-    <div class="action-row">
-      <button class="btn btn-outline" onclick="exportarTodos()">Exportar todo</button>
-      <button class="btn btn-danger"  onclick="borrarTodos()" style="font-size:13px">Borrar todo</button>
-    </div>
-    <div class="saved-list" id="saved-list"></div>
-  </div>
 </main>
 
 <div class="toast" id="toast"></div>
 
-<!-- ═══ MODAL OCR ═══ -->
-<div class="ocr-overlay" id="ocr-overlay">
-  <div class="ocr-modal">
-    <h3 id="ocr-title">Leyendo captura...</h3>
-    <p id="ocr-sub">Esto puede tardar 10-15 segundos la primera vez (descarga el idioma).</p>
-    <div class="ocr-spinner" id="ocr-spin"></div>
-    <div class="ocr-bar"><div class="ocr-bar-fill" id="ocr-bar"></div></div>
-    <div class="ocr-result" id="ocr-result" style="display:none"></div>
-    <div id="ocr-actions" style="display:none;flex-direction:column;gap:8px">
-      <button class="btn btn-success" id="ocr-apply" onclick="aplicarOCR()">Aplicar a la persona</button>
-      <button class="btn btn-outline" onclick="cerrarOCR()">Cancelar</button>
-    </div>
-    <button class="btn btn-outline" id="ocr-close" onclick="cerrarOCR()" style="display:none">Cerrar</button>
-  </div>
-</div>
-
-<input type="file" id="ocr-input" accept="image/*" style="display:none">
-
 <script>
-/* ══════════════ ESTADO GLOBAL ══════════════ */
-const DEFAULT_MAX = 8;
-const STORAGE_KEY = 'dni_registros';
-const MAX_KEY     = 'dni_max';
-const HEAD_KEY    = 'msg_head';
-const FOOT_KEY    = 'msg_foot';
+/* ══════════════ ESTADO ══════════════ */
+const STORAGE_KEY = 'personas_capturas';
+const HEAD_KEY    = 'msg_head_v2';
+const FOOT_KEY    = 'msg_foot_v2';
 
 const DEFAULT_HEAD = `📢 *DIV. INTERVENCIÓN CIUDADANA 1 (DIC)*
 
@@ -356,28 +209,15 @@ Informo que se realizó identificación de Persona con el siguiente resultado
 const DEFAULT_FOOT = `*INFORMANTE:* 
 Sgto Guaymas Emanuel (DIC-1)`;
 
-let html5QrCode   = null;
-let scanning      = false;
-let sesionActiva  = false;
-let sesionDNI     = [];
-let cooldown      = false;
+let personas = [];
 let tesseractWorker = null;
-let ocrDatosTemp  = null;
-let flashOn       = false;
+let procesando = false;
 
 /* ══════════════ UTILIDADES ══════════════ */
-function limpiar(str) { return (str || '').toString().trim().replace(/\s+/g, ' '); }
-
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function getMax() {
-  const v = parseInt(document.getElementById('cfg-max').value, 10);
-  if (Number.isFinite(v) && v >= 1 && v <= 100) return v;
-  return DEFAULT_MAX;
 }
 
 function normalizar(s) {
@@ -386,202 +226,183 @@ function normalizar(s) {
     .toUpperCase();
 }
 
-/* ══════════════ PARSER QR/PDF417 ══════════════ */
-function parsearDNI(texto) {
-  let t = (texto || '').trim();
-  if (!t) return null;
-
-  let partes;
-  if (t.includes('@')) partes = t.split('@');
-  else if (t.includes('\t')) partes = t.split('\t');
-  else return null;
-
-  partes = partes.map(x => x.trim());
-  while (partes.length && partes[0] === '') partes.shift();
-  while (partes.length && partes[partes.length - 1] === '') partes.pop();
-  if (partes.length < 4) return null;
-
-  const dniIdx = partes.findIndex(x => /^\d{6,8}$/.test(x.replace(/\./g, '')));
-  if (dniIdx === -1) return null;
-  const dni = partes[dniIdx].replace(/\./g, '');
-
-  const esSexo = x => /^[MFmf]$/.test((x || '').trim());
-
-  let apellido = '', nombre = '', sexo = '', ejemplar = '',
-      nacimiento = '', vencimiento = '', codigo = '';
-
-  if (dniIdx >= 3 && esSexo(partes[dniIdx - 1])) {
-    apellido    = partes[dniIdx - 3];
-    nombre      = partes[dniIdx - 2];
-    sexo        = partes[dniIdx - 1].toUpperCase();
-    ejemplar    = partes[dniIdx + 1] || '';
-    nacimiento  = partes[dniIdx + 2] || '';
-    vencimiento = partes[dniIdx + 3] || '';
-    codigo      = partes[dniIdx + 4] || '';
-  } else if (esSexo(partes[dniIdx + 1])) {
-    apellido    = partes[dniIdx - 2] || '';
-    nombre      = partes[dniIdx - 1] || '';
-    sexo        = partes[dniIdx + 1].toUpperCase();
-    nacimiento  = partes[dniIdx + 2] || '';
-    vencimiento = partes[dniIdx + 3] || '';
-    ejemplar    = partes[dniIdx + 4] || '';
-    codigo      = partes[dniIdx + 5] || '';
-  } else {
-    apellido    = partes[dniIdx - 3] || partes[dniIdx - 2] || partes[0] || '';
-    nombre      = partes[dniIdx - 2] || partes[dniIdx - 1] || partes[1] || '';
-    ejemplar    = partes[dniIdx + 1] || '';
-    nacimiento  = partes[dniIdx + 2] || '';
-    vencimiento = partes[dniIdx + 3] || '';
-  }
-
-  if (!codigo && partes[0] && /^\d{10,}$/.test(partes[0])) codigo = partes[0];
-  if (!apellido && !nombre) return null;
-
-  const fuente = t.includes('@') ? 'QR' : 'PDF417';
-
-  return {
-    apellido: limpiar(apellido),
-    nombre:   limpiar(nombre),
-    sexo, dni,
-    ejemplar:    limpiar(ejemplar),
-    nacimiento:  limpiar(nacimiento),
-    vencimiento: limpiar(vencimiento),
-    codigo:      limpiar(codigo),
-    domicilio:   '',
-    codigo_dic:  '',
-    nacionalidad: '', lugar: '', localidad: '', provincia: '', cuil: '',
-    fuente, ts: new Date().toISOString()
-  };
+function personaCompleta(p) {
+  return !!(p.domicilio && p.domicilio.trim() && p.codigo_dic && p.codigo_dic.trim());
 }
 
-/* ══════════════ OCR: LECTURA DE CAPTURA SIPS ══════════════ */
-function abrirLectorCaptura() {
-  if (!sesionDNI.length) { toast('Primero escaneá algún DNI'); return; }
-  document.getElementById('ocr-input').click();
+/* ══════════════ PERSISTENCIA ══════════════ */
+function guardarPersonas() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(personas)); } catch (e) {}
+}
+function cargarPersonas() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
 }
 
-async function leerCaptura(file) {
-  const overlay = document.getElementById('ocr-overlay');
-  const title   = document.getElementById('ocr-title');
-  const sub     = document.getElementById('ocr-sub');
-  const spin    = document.getElementById('ocr-spin');
-  const bar     = document.getElementById('ocr-bar');
-  const result  = document.getElementById('ocr-result');
-  const actions = document.getElementById('ocr-actions');
-  const closeBtn= document.getElementById('ocr-close');
+/* ══════════════ OCR + PARSER ══════════════ */
+function abrirSelector() {
+  if (procesando) { toast('Esperá, todavía estoy procesando'); return; }
+  document.getElementById('file-input').click();
+}
 
-  overlay.classList.add('show');
-  title.textContent = 'Leyendo captura...';
-  sub.textContent   = 'Esto puede tardar 10-15 segundos la primera vez (descarga el idioma).';
-  spin.style.display = 'block';
-  document.querySelector('.ocr-bar').style.display = 'block';
-  bar.style.width = '0%';
-  result.style.display = 'none';
-  actions.style.display = 'none';
-  closeBtn.style.display = 'none';
+document.getElementById('file-input').addEventListener('change', e => {
+  const files = Array.from(e.target.files || []);
+  if (files.length) procesarArchivos(files);
+  e.target.value = '';
+});
+
+async function procesarArchivos(files) {
+  if (procesando) return;
+  procesando = true;
+
+  const prog = document.getElementById('progreso');
+  const estado = document.getElementById('pr-estado');
+  const num = document.getElementById('pr-num');
+  const fill = document.getElementById('pr-fill');
+
+  prog.classList.add('show');
 
   try {
     if (!tesseractWorker) {
+      estado.textContent = 'Descargando idioma (solo la primera vez)...';
+      num.textContent = '';
+      fill.style.width = '5%';
       tesseractWorker = await Tesseract.createWorker('spa', 1, {
         logger: m => {
-          if (m.status === 'recognizing text') {
-            bar.style.width = Math.round(m.progress * 100) + '%';
-          } else if (m.status && m.progress != null) {
-            bar.style.width = Math.round(m.progress * 100) + '%';
+          if (m.status && m.progress != null) {
+            const pct = 5 + Math.round(m.progress * 20);
+            fill.style.width = pct + '%';
           }
         }
       });
     }
 
-    const { data: { text } } = await tesseractWorker.recognize(file);
-    const datos = parsearCapturaSIPS(text);
+    let okCount = 0, dupCount = 0, errCount = 0;
 
-    spin.style.display = 'none';
-    document.querySelector('.ocr-bar').style.display = 'none';
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      estado.textContent = `Leyendo imagen ${i + 1} de ${files.length}...`;
+      num.textContent = `${i + 1}/${files.length}`;
+      fill.style.width = Math.round(((i + 0.1) / files.length) * 100) + '%';
 
-    if (!datos.dni && !datos.domicilio && !datos.codigo_dic) {
-      title.textContent = 'No se pudo extraer información';
-      sub.textContent   = 'Probá con una captura más nítida o cargá los datos a mano.';
-      result.style.display = 'block';
-      result.innerHTML = `<label>Texto detectado (primeras líneas)</label>
-        <div class="val" style="font-size:11px;font-weight:400">${esc(text.slice(0, 300))}</div>`;
-      closeBtn.style.display = 'block';
-      return;
+      try {
+        const { data: { text } } = await tesseractWorker.recognize(file);
+        const datos = parsearCaptura(text);
+
+        if (!datos.apellido && !datos.nombre && !datos.dni) {
+          errCount++;
+          continue;
+        }
+
+        // Duplicado por DNI
+        if (datos.dni && personas.some(p => p.dni === datos.dni)) {
+          dupCount++;
+          continue;
+        }
+
+        personas.push({
+          apellido:    datos.apellido || '',
+          nombre:      datos.nombre || '',
+          dni:         datos.dni || '',
+          domicilio:   datos.domicilio || '',
+          codigo_dic:  datos.codigo_dic || '',
+          sexo:        datos.sexo || '',
+          nacimiento:  datos.nacimiento || '',
+          fuente:      'Captura',
+          ts:          new Date().toISOString()
+        });
+        okCount++;
+        renderTodo();
+      } catch (err) {
+        errCount++;
+      }
+
+      fill.style.width = Math.round(((i + 1) / files.length) * 100) + '%';
     }
 
-    let personaIdx = -1;
-    if (datos.dni) {
-      personaIdx = sesionDNI.findIndex(d => d.dni === datos.dni);
-    }
+    estado.textContent = 'Listo';
+    setTimeout(() => { prog.classList.remove('show'); fill.style.width = '0%'; }, 700);
 
-    ocrDatosTemp = { ...datos, personaIdx };
-
-    title.textContent = 'Datos detectados';
-    if (personaIdx >= 0) {
-      const p = sesionDNI[personaIdx];
-      sub.textContent = `Coincide con ${p.apellido}, ${p.nombre}`;
-    } else if (datos.dni) {
-      sub.textContent = `DNI ${datos.dni} no coincide con ninguna persona escaneada.`;
-    } else {
-      sub.textContent = 'No se detectó DNI, pero sí otros datos.';
-    }
-
-    result.style.display = 'block';
-    result.innerHTML = `
-      ${datos.dni        ? `<label>DNI</label><div class="val">${esc(datos.dni)}</div>` : ''}
-      ${datos.domicilio  ? `<label>Domicilio</label><div class="val">${esc(datos.domicilio)}</div>` : ''}
-      ${datos.codigo_dic ? `<label>Código</label><div class="val">${esc(datos.codigo_dic)}</div>` : ''}
-    `;
-
-    if (personaIdx >= 0) {
-      actions.style.display = 'flex';
-    } else {
-      closeBtn.style.display = 'block';
-    }
-  } catch (err) {
-    spin.style.display = 'none';
-    document.querySelector('.ocr-bar').style.display = 'none';
-    title.textContent = 'Error al leer la imagen';
-    sub.textContent   = 'Reintentá con otra captura.';
-    closeBtn.style.display = 'block';
+    let msg = [];
+    if (okCount)  msg.push(`${okCount} agregada${okCount !== 1 ? 's' : ''}`);
+    if (dupCount) msg.push(`${dupCount} repetida${dupCount !== 1 ? 's' : ''}`);
+    if (errCount) msg.push(`${errCount} sin datos`);
+    toast('✅ ' + (msg.length ? msg.join(' · ') : 'sin novedades'));
+  } catch (e) {
+    prog.classList.remove('show');
+    toast('Error: no se pudo iniciar el lector');
+  } finally {
+    procesando = false;
   }
 }
 
-function parsearCapturaSIPS(texto) {
-  const out = { dni: '', domicilio: '', codigo_dic: '' };
+function parsearCaptura(texto) {
+  const out = { apellido: '', nombre: '', dni: '', domicilio: '', codigo_dic: '', sexo: '', nacimiento: '' };
   if (!texto) return out;
 
   const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const norm = lineas.map(l => normalizar(l));
 
-  for (let i = 0; i < norm.length; i++) {
-    if (/DOCUMENTO/.test(norm[i])) {
-      let m = texto.match(/Documento[^\d]*(\d[\d\.]{5,10})/i);
-      if (m) { out.dni = m[1].replace(/\./g, ''); break; }
-      if (i + 1 < lineas.length) {
-        const d = lineas[i + 1].replace(/\./g, '').replace(/\D/g, '');
-        if (/^\d{6,8}$/.test(d)) { out.dni = d; break; }
-      }
+  // Apellido: línea siguiente a "Apellido"
+  for (let i = 0; i < lineas.length - 1; i++) {
+    if (/^apellido\s*:?\s*$/i.test(lineas[i])) {
+      out.apellido = lineas[i + 1].replace(/[^\wÁÉÍÓÚÑ\s]/gi, ' ').trim();
+      break;
+    }
+  }
+  // Fallback inline "Apellido: LAMAS"
+  if (!out.apellido) {
+    const m = texto.match(/Apellido\s*[:\-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
+    if (m) out.apellido = m[1].trim();
+  }
+
+  // Nombre
+  for (let i = 0; i < lineas.length - 1; i++) {
+    if (/^nombre\s*:?\s*$/i.test(lineas[i])) {
+      out.nombre = lineas[i + 1].replace(/[^\wÁÉÍÓÚÑ\s]/gi, ' ').trim();
+      break;
+    }
+  }
+  if (!out.nombre) {
+    const m = texto.match(/Nombre\s*[:\-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
+    if (m) out.nombre = m[1].trim();
+  }
+
+  // DNI: línea siguiente a "Documento" o regex por 8 dígitos
+  for (let i = 0; i < lineas.length - 1; i++) {
+    if (/^documento\s*:?\s*$/i.test(lineas[i])) {
+      const d = lineas[i + 1].replace(/\./g, '').replace(/\D/g, '');
+      if (/^\d{6,8}$/.test(d)) { out.dni = d; break; }
     }
   }
   if (!out.dni) {
+    const m = texto.match(/Documento[^\d]{0,8}(\d[\d\.]{5,10})/i);
+    if (m) out.dni = m[1].replace(/\./g, '');
+  }
+  if (!out.dni) {
     for (const l of lineas) {
-      const m = l.match(/(?<!\d)(\d{8})(?!\d)/);
+      const m = l.match(/(?<!\d)(\d{7,8})(?!\d)/);
       if (m && !/^(19|20)\d{6}$/.test(m[1])) { out.dni = m[1]; break; }
     }
   }
 
-  const etiquetasFin = /^(DOCUMENTO|FECHA|EDAD|SEXO|NAC\.?|CODIGO|CÓDIGO|APELLIDO|NOMBRE|DNI)/i;
-  for (let i = 0; i < norm.length; i++) {
-    if (/^DOMICILIO\b/.test(norm[i]) || /DOMICILIO/.test(norm[i])) {
-      let inline = lineas[i].replace(/^.*?Domicilio[:\s]*/i, '').trim();
+  // Fecha nac + sexo (por si aparecen)
+  const mFecha = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (mFecha) out.nacimiento = mFecha[1];
+  const mSexo = texto.match(/\b([MF])\s+(?:ARG|NAC)/i) || texto.match(/Sexo\s*[:\-]?\s*([MF])/i);
+  if (mSexo) out.sexo = mSexo[1].toUpperCase();
+
+  // Domicilio: desde "Domicilio" hasta "CODIGO" o blank o siguiente etiqueta conocida
+  const etiquetasFin = /^(DOCUMENTO|FECHA|EDAD|SEXO|NAC\.?|CODIGO|C[OÓ]DIGO|APELLIDO|NOMBRE|DNI|NUEVA|GOBIERNO|MINISTERIO|POLIC[IÍ]A|SIPS|SISTEMA)/i;
+  for (let i = 0; i < lineas.length; i++) {
+    if (/^domicilio\b/i.test(lineas[i]) || /domicilio\s*:?\s*$/i.test(lineas[i])) {
+      const inline = lineas[i].replace(/^.*?domicilio[:\s]*/i, '').trim();
       const partes = [];
-      if (inline && !/^DOMICILIO$/i.test(inline)) partes.push(inline);
+      if (inline && !/^domicilio$/i.test(inline)) partes.push(inline);
       for (let j = i + 1; j < lineas.length; j++) {
-        if (/C[OÓ]DIGO/i.test(lineas[j])) break;
-        if (etiquetasFin.test(norm[j])) break;
+        if (/c[oó]digo/i.test(lineas[j])) break;
+        if (etiquetasFin.test(lineas[j])) break;
         partes.push(lineas[j]);
-        if (partes.join(' ').length > 120) break;
+        if (partes.join(' ').length > 150) break;
       }
       if (partes.length) {
         out.domicilio = partes.join(' ')
@@ -593,244 +414,79 @@ function parsearCapturaSIPS(texto) {
     }
   }
 
+  // Código: AZUL/NEGRO/BLANCO/ROJO
   const mCod = texto.match(/C[OÓ]DIGO\s*[:\-]?\s*(AZUL|NEGRO|BLANCO|ROJO)/i);
   if (mCod) out.codigo_dic = mCod[1].toUpperCase();
 
   return out;
 }
 
-function aplicarOCR() {
-  if (!ocrDatosTemp) { cerrarOCR(); return; }
-  const { personaIdx, domicilio, codigo_dic } = ocrDatosTemp;
-  if (personaIdx < 0) { cerrarOCR(); return; }
-
-  const p = sesionDNI[personaIdx];
-  if (domicilio)  p.domicilio  = domicilio.toUpperCase();
-  if (codigo_dic) p.codigo_dic = codigo_dic;
-
-  cerrarOCR();
+/* ══════════════ RENDER ══════════════ */
+function renderTodo() {
+  renderLista();
   renderMensajePersonas();
-  renderSessionList();
-  toast('✅ Datos aplicados a ' + p.apellido);
-
-  setTimeout(() => {
-    const cards = document.querySelectorAll('.msg-person');
-    if (cards[personaIdx]) {
-      cards[personaIdx].classList.add('completada');
-      cards[personaIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, 100);
+  renderContador();
+  guardarPersonas();
 }
 
-function cerrarOCR() {
-  document.getElementById('ocr-overlay').classList.remove('show');
-  ocrDatosTemp = null;
-  document.getElementById('ocr-input').value = '';
-}
-
-document.getElementById('ocr-input').addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0];
-  if (f) leerCaptura(f);
-});
-
-/* ══════════════ FLASH / TORCH ══════════════ */
-function verificarFlash() {
-  const btn = document.getElementById('btn-flash');
-  const video = document.querySelector('#reader video');
-  if (!video || !video.srcObject) { btn.classList.remove('show'); return; }
-  const tracks = video.srcObject.getVideoTracks ? video.srcObject.getVideoTracks() : [];
-  const track = tracks[0];
-  if (!track) { btn.classList.remove('show'); return; }
-  const caps = track.getCapabilities ? track.getCapabilities() : {};
-  if (caps && caps.torch) btn.classList.add('show');
-  else btn.classList.remove('show');
-}
-
-function toggleFlash() {
-  const btn = document.getElementById('btn-flash');
-  const video = document.querySelector('#reader video');
-  if (!video || !video.srcObject) return;
-  const tracks = video.srcObject.getVideoTracks ? video.srcObject.getVideoTracks() : [];
-  const track = tracks[0];
-  if (!track) return;
-  flashOn = !flashOn;
-  track.applyConstraints({ advanced: [{ torch: flashOn }] })
-    .then(() => btn.classList.toggle('on', flashOn))
-    .catch(() => {
-      flashOn = !flashOn;
-      toast('Este dispositivo no soporta flash');
-    });
-}
-
-/* ══════════════ CONTROL DE BOTONES ══════════════ */
-function refrescarControles() {
-  const completo = sesionDNI.length >= getMax();
-  document.getElementById('btn-start').style.display  = (!sesionActiva) ? 'block' : 'none';
-  document.getElementById('btn-stop').style.display   = (sesionActiva && scanning) ? 'block' : 'none';
-  document.getElementById('btn-resume').style.display = (sesionActiva && !scanning && !completo) ? 'block' : 'none';
-  document.getElementById('cfg-row').style.display    = sesionActiva ? 'none' : 'flex';
-}
-
-/* ══════════════ SESIÓN ══════════════ */
-function startSesion() {
-  sesionDNI = [];
-  sesionActiva = true;
-  cooldown = false;
-  renderSessionBar();
-  document.getElementById('session-bar').style.display = 'flex';
-  document.getElementById('session-section').style.display = 'none';
-  iniciarCamara();
-}
-
-function iniciarCamara() {
-  if (html5QrCode) {
-    try { html5QrCode.clear(); } catch (e) {}
-    html5QrCode = null;
+function renderContador() {
+  const el = document.getElementById('contador');
+  const total = personas.length;
+  const completas = personas.filter(personaCompleta).length;
+  const acc = document.getElementById('acciones-capturas');
+  if (!total) {
+    el.textContent = '';
+    acc.style.display = 'none';
+    return;
   }
-  html5QrCode = new Html5Qrcode('reader');
-  const config = { fps: 12, aspectRatio: 1.0 };
-  const formats = { formatsToSupport: [
-    Html5QrcodeSupportedFormats.QR_CODE,
-    Html5QrcodeSupportedFormats.PDF_417,
-    Html5QrcodeSupportedFormats.CODE_128,
-    Html5QrcodeSupportedFormats.CODE_39
-  ] };
-
-  Html5Qrcode.getCameras()
-    .then(cams => {
-      const cam = cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1];
-      return html5QrCode.start({ deviceId: { exact: cam.id } }, { ...config, ...formats }, onQRSuccess, () => {});
-    })
-    .catch(() => {
-      return html5QrCode.start({ facingMode: 'environment' }, { ...config, ...formats }, onQRSuccess, () => {});
-    })
-    .then(() => {
-      scanning = true;
-      refrescarControles();
-      actualizarHint();
-      setTimeout(verificarFlash, 500);
-    })
-    .catch(() => { scanning = false; refrescarControles(); toast('No se pudo iniciar la cámara'); });
+  const faltan = total - completas;
+  el.innerHTML = `<strong>${total}</strong> persona${total !== 1 ? 's' : ''} · ${completas} completa${completas !== 1 ? 's' : ''}${faltan ? ` · <span style="color:var(--warn)">${faltan} sin completar</span>` : ''}`;
+  acc.style.display = 'grid';
 }
 
-function pausarCamara() {
-  if (!html5QrCode || !scanning) { scanning = false; refrescarControles(); return Promise.resolve(); }
-  flashOn = false;
-  return html5QrCode.stop()
-    .catch(() => {})
-    .then(() => {
-      scanning = false;
-      refrescarControles();
-      renderSessionBar();
-      const btn = document.getElementById('btn-flash');
-      if (btn) btn.classList.remove('on', 'show');
-    });
-}
-
-function reanudarCamara() {
-  if (sesionDNI.length >= getMax()) { toast(`Límite de ${getMax()} DNI alcanzado`); return; }
-  iniciarCamara();
-}
-
-function onQRSuccess(decodedText) {
-  if (cooldown) return;
-
-  const datos = parsearDNI(decodedText);
-  if (!datos) { toast('Ni QR ni código de barras reconocido'); return; }
-  if (sesionDNI.some(d => d.dni === datos.dni)) { toast(`DNI ${datos.dni} ya escaneado`); return; }
-
-  cooldown = true;
-  setTimeout(() => { cooldown = false; }, 2000);
-
-  const nuevoIdx = sesionDNI.length;
-  sesionDNI.push(datos);
-  renderSessionBar();
-  renderSessionList(nuevoIdx);
-  renderMensajePersonas();
-  document.getElementById('session-section').style.display = 'block';
-
-  setTimeout(() => {
-    const el = document.getElementById(`si-${nuevoIdx}`);
-    if (el) el.classList.remove('nuevo');
-    const num = el && el.querySelector('.si-num');
-    if (num) num.style.background = 'var(--success)';
-  }, 3000);
-
-  const max = getMax();
-  if (sesionDNI.length >= max) {
-    pausarCamara().then(() => toast(`✅ ${max} DNI completados`));
-  } else {
-    toast(`DNI ${sesionDNI.length} de ${max} leído (${datos.fuente})`);
+function renderLista() {
+  const cont = document.getElementById('lista-personas');
+  if (!personas.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">📷</div>Cargá una captura del sistema<br>para empezar</div>`;
+    return;
   }
-  actualizarHint();
-}
-
-function actualizarHint() {
-  const h = document.getElementById('scan-hint');
-  const max = getMax();
-  if (!sesionActiva) {
-    h.textContent = `Configurá el límite e iniciá la sesión para escanear hasta ${max} DNI`;
-  } else if (sesionDNI.length >= max) {
-    h.textContent = `Límite de ${max} DNI alcanzado. Guardá o copiá los datos.`;
-  } else {
-    h.textContent = `Apuntá al QR o código de barras del DNI. Próximo: ${sesionDNI.length + 1} de ${max}`;
-  }
-}
-
-function renderSessionBar() {
-  const max = getMax();
-  document.getElementById('s-count').textContent = sesionDNI.length;
-  document.getElementById('s-max').textContent   = max;
-  const dotsEl = document.getElementById('s-dots');
-  dotsEl.innerHTML = Array.from({ length: max }, (_, i) => {
-    let cls = 'dot';
-    if (i < sesionDNI.length) cls += ' filled';
-    else if (i === sesionDNI.length && scanning) cls += ' current';
-    return `<div class="${cls}"></div>`;
-  }).join('');
-}
-
-function renderSessionList(nuevoIdx = -1) {
-  const cont = document.getElementById('session-list');
-  if (!sesionDNI.length) { cont.innerHTML = ''; return; }
-  cont.innerHTML = sesionDNI.map((d, i) => {
-    const esNuevo = i === nuevoIdx;
-    const id = `si-datos-${i}`;
-    const cod = d.codigo_dic || '';
+  cont.innerHTML = personas.map((p, i) => {
+    const completa = personaCompleta(p);
+    const cod = p.codigo_dic || '';
+    const nombre = `${p.apellido}${p.nombre ? ', ' + p.nombre : ''}`.trim() || '(sin nombre)';
     return `
-    <div class="session-item ${esNuevo ? 'nuevo' : ''}" id="si-${i}">
-      <div class="si-header" onclick="toggleDatos(${i})">
-        <div class="si-num">${i + 1}</div>
-        <div class="si-info">
-          <div class="si-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
-          <div class="si-meta">
-            <span>DNI ${esc(d.dni)}</span>
-            ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
-            ${cod ? `<span style="color:var(--warn);font-weight:600">${esc(cod)}</span>` : ''}
-            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:10px;padding:0 4px">${esc(d.fuente)}</span>
+    <div class="persona ${completa?'':'incompleta'}" id="per-${i}">
+      <div class="p-head">
+        <div style="flex:1;min-width:0">
+          <div class="p-name">${esc(nombre)}</div>
+          <div class="p-dni">
+            ${p.dni ? 'DNI ' + esc(p.dni) : ''}
+            ${p.dni && p.sexo ? ' · ' : ''}${p.sexo ? esc(p.sexo) : ''}
+            ${completa
+              ? ' <span class="p-badge-ok">✅</span>'
+              : ' <span class="p-badge-falta">⚠️ falta completar</span>'}
           </div>
         </div>
-        <span class="si-toggle ${esNuevo ? 'open' : ''}" id="toggle-${i}">▼</span>
-        <button class="si-del" onclick="event.stopPropagation(); quitarDeSesion(${i})" title="Quitar">✕</button>
+        <button class="p-del" onclick="borrarPersona(${i})" title="Quitar">✕</button>
       </div>
-      <div class="si-datos ${esNuevo ? 'open' : ''}" id="${id}">
-        <div class="si-field-row">
-          <div class="si-field"><label>Apellido</label><span>${esc(d.apellido) || '—'}</span></div>
-          <div class="si-field" style="grid-column:span 2"><label>Nombre/s</label><span>${esc(d.nombre) || '—'}</span></div>
+      <div class="p-row">
+        <div class="p-field">
+          <label>Apellido</label>
+          <input type="text" value="${esc(p.apellido)}" oninput="editar(${i},'apellido',this.value)">
         </div>
-        <div class="si-field-row">
-          <div class="si-field"><label>DNI N°</label><span>${esc(d.dni) || '—'}</span></div>
-          <div class="si-field"><label>Sexo</label><span>${esc(d.sexo) || '—'}</span></div>
-          <div class="si-field"><label>Nacimiento</label><span>${esc(d.nacimiento) || '—'}</span></div>
+        <div class="p-field">
+          <label>Nombre</label>
+          <input type="text" value="${esc(p.nombre)}" oninput="editar(${i},'nombre',this.value)">
         </div>
-        <div class="si-field">
-          <label>Domicilio</label>
-          <input type="text" value="${esc(d.domicilio || '')}" placeholder="Calle N°, Barrio, Localidad"
-                 oninput="setDomicilio(${i}, this.value)">
+      </div>
+      <div class="p-row">
+        <div class="p-field">
+          <label>DNI</label>
+          <input type="text" value="${esc(p.dni)}" oninput="editar(${i},'dni',this.value)" inputmode="numeric">
         </div>
-        <div class="si-field">
-          <label>Código DIC</label>
-          <select onchange="setCodigoDic(${i}, this.value)">
+        <div class="p-field">
+          <label>Código</label>
+          <select onchange="editar(${i},'codigo_dic',this.value)">
             <option value="" ${!cod?'selected':''}>— sin código —</option>
             <option value="AZUL"   ${cod==='AZUL'?'selected':''}>AZUL</option>
             <option value="NEGRO"  ${cod==='NEGRO'?'selected':''}>NEGRO</option>
@@ -838,277 +494,100 @@ function renderSessionList(nuevoIdx = -1) {
             <option value="ROJO"   ${cod==='ROJO'?'selected':''}>ROJO</option>
           </select>
         </div>
-        <div class="si-actions">
-          <button class="si-copy-btn" onclick="copiarDeSesion(${i})">Copiar</button>
-          <button class="si-copy-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
-        </div>
+      </div>
+      <div class="p-field">
+        <label>Domicilio</label>
+        <input type="text" value="${esc(p.domicilio)}" placeholder="Calle N°, Barrio, Localidad"
+               oninput="editar(${i},'domicilio',this.value)">
       </div>
     </div>`;
   }).join('');
+}
 
-  if (nuevoIdx >= 0) {
-    setTimeout(() => {
-      const el = document.getElementById(`si-${nuevoIdx}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+function editar(idx, campo, valor) {
+  if (!personas[idx]) return;
+  personas[idx][campo] = valor;
+  guardarPersonas();
+
+  // Refrescar solo el header de esa persona sin perder el foco
+  const item = document.getElementById(`per-${idx}`);
+  if (!item) return;
+  const p = personas[idx];
+  const completa = personaCompleta(p);
+  item.classList.toggle('incompleta', !completa);
+
+  const nameEl = item.querySelector('.p-name');
+  if (nameEl && (campo === 'apellido' || campo === 'nombre')) {
+    const nombre = `${p.apellido}${p.nombre ? ', ' + p.nombre : ''}`.trim() || '(sin nombre)';
+    nameEl.textContent = nombre;
   }
-}
-
-function toggleDatos(i) {
-  document.getElementById(`si-datos-${i}`).classList.toggle('open');
-  document.getElementById(`toggle-${i}`).classList.toggle('open');
-}
-
-function setDomicilio(i, val) {
-  if (sesionDNI[i]) sesionDNI[i].domicilio = val.trim().toUpperCase();
-}
-
-function setCodigoDic(i, val) {
-  if (sesionDNI[i]) sesionDNI[i].codigo_dic = val;
-  renderSessionList();
+  const dniEl = item.querySelector('.p-dni');
+  if (dniEl && (campo === 'dni' || campo === 'sexo' || campo === 'codigo_dic' || campo === 'domicilio' || campo === 'apellido' || campo === 'nombre')) {
+    dniEl.innerHTML = `
+      ${p.dni ? 'DNI ' + esc(p.dni) : ''}
+      ${p.dni && p.sexo ? ' · ' : ''}${p.sexo ? esc(p.sexo) : ''}
+      ${completa
+        ? ' <span class="p-badge-ok">✅</span>'
+        : ' <span class="p-badge-falta">⚠️ falta completar</span>'}`;
+  }
+  renderContador();
   renderMensajePersonas();
 }
 
-function quitarDeSesion(idx) {
-  sesionDNI.splice(idx, 1);
-  renderSessionBar();
-  renderSessionList();
-  renderMensajePersonas();
-  if (!sesionDNI.length) document.getElementById('session-section').style.display = 'none';
-  refrescarControles();
-  actualizarHint();
+function borrarPersona(idx) {
+  personas.splice(idx, 1);
+  renderTodo();
+  toast('Persona eliminada');
 }
 
-function guardarSesion() {
-  if (!sesionDNI.length) { toast('No hay DNI en la sesión'); return; }
-  const lista = cargarLista();
-  const existentes = new Set(lista.map(d => d.dni));
-  let nuevos = 0, repetidos = 0;
-  sesionDNI.forEach(d => {
-    if (existentes.has(d.dni)) { repetidos++; return; }
-    lista.unshift(d); existentes.add(d.dni); nuevos++;
-  });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  toast(repetidos
-    ? `${nuevos} guardados · ${repetidos} ya existían`
-    : `${nuevos} DNI guardados`);
-}
-
-function copiarDeSesion(idx) {
-  const d = sesionDNI[idx];
-  if (d) copiarDatos(d);
-}
-
-function limpiarSesion() {
-  sesionActiva = false;
-  sesionDNI = [];
-  cooldown = false;
-  flashOn = false;
-  document.getElementById('session-bar').style.display = 'none';
-  document.getElementById('session-section').style.display = 'none';
-  renderMensajePersonas();
-
-  const terminar = () => {
-    scanning = false;
-    flashOn = false;
-    if (html5QrCode) { try { html5QrCode.clear(); } catch (e) {} html5QrCode = null; }
-    const btn = document.getElementById('btn-flash');
-    if (btn) btn.classList.remove('on', 'show');
-    refrescarControles();
-    actualizarHint();
-  };
-
-  if (html5QrCode && scanning) {
-    html5QrCode.stop().catch(() => {}).then(terminar);
-  } else {
-    terminar();
-  }
-}
-
-/* ══════════════ MANUAL ══════════════ */
-function guardarManual() {
-  const apellido = document.getElementById('m-apellido').value.trim();
-  const nombre   = document.getElementById('m-nombre').value.trim();
-  const dni      = document.getElementById('m-dni').value.trim();
-  if (!apellido || !nombre || !dni) { toast('Completá apellido, nombre y DNI'); return; }
-
-  const datos = {
-    apellido, nombre,
-    sexo:         document.getElementById('m-sexo').value.trim().toUpperCase(),
-    dni,
-    ejemplar:     '',
-    nacimiento:   document.getElementById('m-nac').value.trim(),
-    vencimiento:  document.getElementById('m-venc').value.trim(),
-    codigo:       '',
-    domicilio:    document.getElementById('m-domicilio').value.trim().toUpperCase(),
-    localidad:    document.getElementById('m-localidad').value.trim().toUpperCase(),
-    provincia:    document.getElementById('m-provincia').value.trim().toUpperCase(),
-    cuil:         document.getElementById('m-cuil').value.trim(),
-    codigo_dic:   document.getElementById('m-codigo-dic').value,
-    nacionalidad: '', lugar: '',
-    fuente: 'Manual',
-    ts: new Date().toISOString()
-  };
-
-  if (sesionActiva && sesionDNI.length < getMax()) {
-    if (sesionDNI.some(d => d.dni === datos.dni)) { toast('Ese DNI ya está en la sesión'); return; }
-    sesionDNI.push(datos);
-    renderSessionBar();
-    renderSessionList();
-    renderMensajePersonas();
-    document.getElementById('session-section').style.display = 'block';
-    switchTab('scan');
-    toast('Agregado a la sesión actual');
-  } else {
-    const lista = cargarLista();
-    if (lista.some(d => d.dni === datos.dni)) { toast('Ese DNI ya está guardado'); return; }
-    lista.unshift(datos);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-    toast('Guardado correctamente');
-  }
-
-  ['m-apellido','m-nombre','m-sexo','m-dni','m-nac','m-venc',
-   'm-domicilio','m-localidad','m-provincia','m-cuil']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('m-codigo-dic').value = '';
-}
-
-/* ══════════════ STORAGE ══════════════ */
-function cargarLista() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function borrarRegistro(idx) {
-  const lista = cargarLista();
-  lista.splice(idx, 1);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  renderSaved();
-  toast('Registro eliminado');
-}
-
-function borrarTodos() {
-  if (!confirm('¿Borrar todos los registros guardados?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  renderSaved();
-  toast('Registros eliminados');
-}
-
-function copiarGuardado(idx) {
-  const d = cargarLista()[idx];
-  if (d) copiarDatos(d);
-}
-
-function formatearDatos(datos) {
-  const nom = `${datos.apellido || ''}, ${datos.nombre || ''}`.trim().replace(/,$/,'');
-  return [
-    nom,
-    `DNI: ${datos.dni}`,
-    datos.sexo        ? `SEXO: ${datos.sexo}` : '',
-    datos.nacimiento  ? `NACIMIENTO: ${datos.nacimiento}` : '',
-    datos.vencimiento ? `VENCIMIENTO: ${datos.vencimiento}` : '',
-    datos.domicilio   ? `DOMICILIO: ${datos.domicilio}` : '',
-    datos.localidad   ? `LOCALIDAD: ${datos.localidad}` : '',
-    datos.provincia   ? `PROVINCIA: ${datos.provincia}` : '',
-    datos.cuil        ? `CUIL/CUIT: ${datos.cuil}` : '',
-    datos.codigo_dic  ? `CODIGO: ${datos.codigo_dic}` : '',
-  ].filter(Boolean).join('\n');
-}
-
-function copiarDatos(datos) {
-  const txt = formatearDatos(datos);
-  navigator.clipboard.writeText(txt)
-    .then(() => toast('Datos copiados'))
-    .catch(() => toast('No se pudo copiar'));
-}
-
-/* ══════════════ GUARDADOS ══════════════ */
-function renderSaved() {
-  const lista = cargarLista();
-  const cont = document.getElementById('saved-list');
-  if (!lista.length) {
-    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>No hay registros guardados</div>`;
-    return;
-  }
-  cont.innerHTML = lista.map((d, i) => `
-    <div class="saved-item">
-      <div class="s-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
-      <div class="s-meta">
-        <span>DNI ${esc(d.dni)}</span>
-        ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
-        ${d.codigo_dic ? `<span style="color:var(--warn);font-weight:600">${esc(d.codigo_dic)}</span>` : ''}
-        <span>${esc(d.fuente)}</span>
-      </div>
-      ${d.domicilio ? `<div class="s-meta"><span>Dlio ${esc(d.domicilio)}</span></div>` : ''}
-      <div class="s-actions">
-        <button class="mini-btn" onclick="copiarGuardado(${i})">Copiar</button>
-        <button class="mini-btn del" onclick="borrarRegistro(${i})">Eliminar</button>
-      </div>
-    </div>`).join('');
-}
-
-function exportarTodos() {
-  const lista = cargarLista();
-  if (!lista.length) { toast('No hay datos para exportar'); return; }
-  const txt = lista.map((d, i) => [
-    `[${i + 1}] ${d.apellido}, ${d.nombre}`,
-    `DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento}`,
-    d.domicilio  ? `Domicilio: ${d.domicilio}` : '',
-    d.codigo_dic ? `Código: ${d.codigo_dic}` : '',
-    d.cuil       ? `CUIL/CUIT: ${d.cuil}` : '',
-    `Registro: ${new Date(d.ts).toLocaleString('es-AR')}`,
-    ''
-  ].filter(Boolean).join('\n')).join('\n');
-
-  const blob = new Blob([txt], { type: 'text/plain' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = `registros_dni_${new Date().toISOString().slice(0, 10)}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
+function borrarTodas() {
+  if (!personas.length) return;
+  if (!confirm('¿Borrar todas las personas cargadas?')) return;
+  personas = [];
+  renderTodo();
+  toast('Listado vacío');
 }
 
 /* ══════════════ MENSAJE ══════════════ */
-function irAMensaje() { switchTab('mensaje'); }
-
 function renderMensajePersonas() {
   const cont = document.getElementById('msg-personas');
-  const cnt  = document.getElementById('msg-count');
-  const total = sesionDNI.length;
+  const cnt = document.getElementById('msg-count');
+  const total = personas.length;
   cnt.textContent = total ? `(${total})` : '(vacío)';
 
   if (!total) {
-    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div>Escaneá o agregá personas para verlas acá</div>`;
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div>Agregá capturas para ver personas acá</div>`;
     return;
   }
 
-  cont.innerHTML = sesionDNI.map((d, i) => {
-    const cod = d.codigo_dic || '';
-    const completa = d.domicilio && cod;
+  cont.innerHTML = personas.map((p, i) => {
+    const completa = personaCompleta(p);
+    const nom = `${p.apellido} ${p.nombre}`.trim() || '(sin nombre)';
     return `
-    <div class="msg-person ${completa?'completada':''}">
-      <div class="mp-header">
-        <div>
-          <div class="mp-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
-          <div class="mp-dni">DNI ${esc(d.dni)}</div>
+    <div class="persona ${completa?'':'incompleta'}" style="margin-bottom:10px">
+      <div class="p-head">
+        <div style="flex:1;min-width:0">
+          <div class="p-name">${esc(nom)}</div>
+          <div class="p-dni">
+            DNI ${esc(p.dni) || '—'}
+            ${completa ? ' <span class="p-badge-ok">✅</span>' : ' <span class="p-badge-falta">⚠️</span>'}
+          </div>
         </div>
-        <button class="mini-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
+        <button class="p-del" onclick="borrarPersona(${i})">✕</button>
       </div>
-      <div class="si-field">
+      <div class="p-field">
         <label>Domicilio</label>
-        <input type="text" value="${esc(d.domicilio || '')}"
-               placeholder="Calle N°, Barrio, Localidad"
-               oninput="setDomicilio(${i}, this.value)">
+        <input type="text" value="${esc(p.domicilio)}" placeholder="Calle N°, Barrio, Localidad"
+               oninput="editar(${i},'domicilio',this.value)">
       </div>
-      <div class="si-field">
+      <div class="p-field">
         <label>Código</label>
-        <select onchange="setCodigoDic(${i}, this.value)">
-          <option value="" ${!cod?'selected':''}>— sin código —</option>
-          <option value="AZUL"   ${cod==='AZUL'?'selected':''}>AZUL</option>
-          <option value="NEGRO"  ${cod==='NEGRO'?'selected':''}>NEGRO</option>
-          <option value="BLANCO" ${cod==='BLANCO'?'selected':''}>BLANCO</option>
-          <option value="ROJO"   ${cod==='ROJO'?'selected':''}>ROJO</option>
+        <select onchange="editar(${i},'codigo_dic',this.value)">
+          <option value="" ${!p.codigo_dic?'selected':''}>— sin código —</option>
+          <option value="AZUL"   ${p.codigo_dic==='AZUL'?'selected':''}>AZUL</option>
+          <option value="NEGRO"  ${p.codigo_dic==='NEGRO'?'selected':''}>NEGRO</option>
+          <option value="BLANCO" ${p.codigo_dic==='BLANCO'?'selected':''}>BLANCO</option>
+          <option value="ROJO"   ${p.codigo_dic==='ROJO'?'selected':''}>ROJO</option>
         </select>
       </div>
     </div>`;
@@ -1119,26 +598,26 @@ function armarMensaje() {
   const head = document.getElementById('msg-head').value.trim();
   const foot = document.getElementById('msg-foot').value.trim();
 
-  const personas = sesionDNI.map(d => {
-    const nombre = `${d.apellido || ''} ${d.nombre || ''}`.trim();
-    const dom = (d.domicilio || '').trim() || 'no existe registros';
-    const cod = (d.codigo_dic || '').trim() || '—';
+  const lista = personas.map(p => {
+    const nombre = `${p.apellido || ''} ${p.nombre || ''}`.trim() || '(sin nombre)';
+    const dom = (p.domicilio || '').trim() || 'no existe registros';
+    const cod = (p.codigo_dic || '').trim() || '—';
     return [
       nombre,
-      `DNI ${d.dni}`,
+      `DNI ${p.dni || '—'}`,
       `Dlio ${dom}`,
       `Código ${cod}`
     ].join('\n');
   }).join('\n\n');
 
   const partes = [head];
-  if (personas) partes.push(personas);
+  if (lista) partes.push(lista);
   if (foot) partes.push(foot);
   return partes.filter(Boolean).join('\n\n');
 }
 
 function copiarMensaje() {
-  if (!sesionDNI.length) { toast('No hay personas cargadas'); return; }
+  if (!personas.length) { toast('No hay personas cargadas'); return; }
   const txt = armarMensaje();
   navigator.clipboard.writeText(txt)
     .then(() => toast('Mensaje copiado al portapapeles'))
@@ -1152,13 +631,14 @@ function verPreview() {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
+function irAMensaje() { switchTab('mensaje'); }
+
 /* ══════════════ TABS ══════════════ */
 function switchTab(tab) {
-  ['scan', 'manual', 'mensaje', 'saved'].forEach(t => {
+  ['capturas', 'mensaje'].forEach(t => {
     document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
     document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
   });
-  if (tab === 'saved')   renderSaved();
   if (tab === 'mensaje') renderMensajePersonas();
 }
 
@@ -1171,24 +651,9 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-/* ══════════════ CONFIG PERSISTENTE ══════════════ */
-(function initConfig() {
-  const cfg = document.getElementById('cfg-max');
-  const saved = parseInt(localStorage.getItem(MAX_KEY) || '', 10);
-  if (Number.isFinite(saved) && saved >= 1 && saved <= 100) cfg.value = saved;
-
-  const persist = () => {
-    let v = parseInt(cfg.value, 10);
-    if (!Number.isFinite(v) || v < 1) v = 1;
-    if (v > 100) v = 100;
-    cfg.value = v;
-    localStorage.setItem(MAX_KEY, String(v));
-    renderSessionBar();
-    refrescarControles();
-    actualizarHint();
-  };
-  cfg.addEventListener('change', persist);
-  cfg.addEventListener('blur', persist);
+/* ══════════════ INIT ══════════════ */
+(function init() {
+  personas = cargarPersonas();
 
   const head = document.getElementById('msg-head');
   const foot = document.getElementById('msg-foot');
@@ -1197,9 +662,20 @@ function toast(msg) {
   head.addEventListener('input', () => localStorage.setItem(HEAD_KEY, head.value));
   foot.addEventListener('input', () => localStorage.setItem(FOOT_KEY, foot.value));
 
-  refrescarControles();
-  actualizarHint();
-  renderMensajePersonas();
+  // Drag & drop
+  const zone = document.getElementById('upload-zone');
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e => {
+    const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+    if (files.length) procesarArchivos(files);
+  });
+
+  renderTodo();
 })();
 </script>
 </body>
