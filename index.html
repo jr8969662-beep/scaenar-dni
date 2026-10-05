@@ -7,216 +7,118 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1c2333;
-    --border: #30363d;
-    --accent: #2563eb;
-    --accent-light: #3b82f6;
-    --success: #16a34a;
-    --success-light: #22c55e;
-    --text: #e6edf3;
-    --text-muted: #7d8590;
-    --danger: #dc2626;
-    --warn: #d97706;
-    --font: 'Segoe UI', system-ui, sans-serif;
+    --bg:#0d1117; --surface:#161b22; --surface2:#1c2333; --border:#30363d;
+    --accent:#2563eb; --accent-light:#3b82f6; --success:#16a34a;
+    --text:#e6edf3; --text-muted:#7d8590; --danger:#dc2626; --warn:#d97706;
+    --font:'Segoe UI', system-ui, sans-serif;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     box-sizing: border-box;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; flex-direction: column; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
 
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex; align-items: center; gap: 10px;
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
-  }
-  header .badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .5px; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; }
-  header h1 { font-size: 16px; font-weight: 600; flex: 1; }
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
+  header .badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase}
+  header h1{font-size:16px;font-weight:600;flex:1}
 
-  main { flex: 1; padding: 20px 16px; max-width: 480px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+  main{flex:1;padding:20px 16px;max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px}
 
-  /* TABS */
-  .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; font-family: var(--font); font-weight: 500; padding: 10px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: background .15s, color .15s; }
-  .tab-btn .icon { font-size: 18px; }
-  .tab-btn.active { background: var(--accent); color: #fff; }
-  .tab-btn:not(.active):hover { background: var(--surface2); color: var(--text); }
+  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .tab-btn{background:none;border:none;color:var(--text-muted);font-size:12px;font-family:var(--font);font-weight:500;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .15s,color .15s}
+  .tab-btn .icon{font-size:18px}
+  .tab-btn.active{background:var(--accent);color:#fff}
+  .tab-btn:not(.active):hover{background:var(--surface2);color:var(--text)}
 
-  /* PANELS */
-  .panel { display: none; flex-direction: column; gap: 14px; }
-  .panel.active { display: flex; }
+  .panel{display:none;flex-direction:column;gap:14px}
+  .panel.active{display:flex}
 
-  /* BARRA DE PROGRESO SESION */
-  .session-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .session-bar .s-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-  .session-bar .s-label strong { color: var(--text); }
-  .dots { display: flex; gap: 5px; flex: 1; }
-  .dot {
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--border);
-    transition: background .2s;
-  }
-  .dot.filled { background: var(--success); }
-  .dot.current { background: var(--accent); animation: pulse 1s infinite; }
+  .session-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+  .session-bar .s-label{font-size:12px;color:var(--text-muted);white-space:nowrap}
+  .session-bar .s-label strong{color:var(--text)}
+  .dots{display:flex;gap:5px;flex:1;overflow:hidden}
+  .dot{width:100%;height:6px;border-radius:3px;background:var(--border);transition:background .2s}
+  .dot.filled{background:var(--success)}
+  .dot.current{background:var(--accent);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .config-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px}
+  .config-row label{font-size:12px;color:var(--text-muted);flex:1}
+  .config-row input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;padding:6px 10px;width:70px;text-align:center;outline:none}
+  .config-row input:focus{border-color:var(--accent-light)}
 
-  /* SCANNER */
-  .scanner-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  #reader { width: 100%; }
-  #reader video { border-radius: 0 !important; }
+  .scanner-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  #reader{width:100%}
+  #reader video{border-radius:0!important}
+  .scan-hint{text-align:center;color:var(--text-muted);font-size:13px;padding:8px}
 
-  .scan-hint { text-align: center; color: var(--text-muted); font-size: 13px; padding: 8px; }
+  .session-list{display:flex;flex-direction:column;gap:8px}
+  .session-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:10px;overflow:hidden;animation:slideIn .25s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .session-item.nuevo{border-left-color:var(--accent);box-shadow:0 0 0 2px rgba(37,99,235,.25)}
 
-  /* LISTA SESION */
-  .session-list { display: flex; flex-direction: column; gap: 8px; }
+  .si-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;user-select:none}
+  .si-num{background:var(--success);color:#fff;font-size:11px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .session-item.nuevo .si-num{background:var(--accent)}
+  .si-info{flex:1;min-width:0}
+  .si-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .si-meta{font-size:11px;color:var(--text-muted);display:flex;gap:8px;flex-wrap:wrap;margin-top:1px}
+  .si-toggle{color:var(--text-muted);font-size:13px;flex-shrink:0;transition:transform .2s}
+  .si-toggle.open{transform:rotate(180deg)}
+  .si-del{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px 6px;flex-shrink:0}
+  .si-del:hover{color:var(--danger)}
 
-  .session-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--success);
-    border-radius: 10px;
-    overflow: hidden;
-    animation: slideIn .25s ease;
-  }
+  .si-datos{border-top:1px solid var(--border);padding:12px;display:none;flex-direction:column;gap:8px;background:var(--surface2)}
+  .si-datos.open{display:flex}
+  .si-field{display:flex;flex-direction:column;gap:1px}
+  .si-field label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
+  .si-field span{font-size:14px;font-weight:500;word-break:break-word}
+  .si-field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .si-actions{display:flex;gap:8px;margin-top:4px}
+  .si-copy-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;flex:1}
+  .si-copy-btn:hover{background:var(--border)}
+  .si-copy-btn.del{color:var(--danger)}
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-light)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-success{background:var(--success);color:#fff}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn-outline:hover{background:var(--surface2)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
 
-  .session-item.nuevo {
-    border-left-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(37,99,235,.25);
-  }
+  .action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .action-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 
-  .si-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
-    user-select: none;
-  }
+  .form-group{display:flex;flex-direction:column;gap:6px}
+  .form-group label{font-size:12px;font-weight:600;color:var(--text-muted)}
+  .form-group input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:15px;padding:10px 12px;width:100%;outline:none;transition:border-color .15s}
+  .form-group input:focus{border-color:var(--accent-light)}
+  .form-group input::placeholder{color:var(--text-muted)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-  .si-num {
-    background: var(--success);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
+  .saved-list{display:flex;flex-direction:column;gap:10px}
+  .saved-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+  .saved-item .s-name{font-size:14px;font-weight:600;word-break:break-word}
+  .saved-item .s-meta{font-size:12px;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap}
+  .saved-item .s-actions{display:flex;gap:8px;margin-top:6px}
+  .mini-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer}
+  .mini-btn:hover{background:var(--border)}
+  .mini-btn.del{color:var(--danger)}
 
-  .session-item.nuevo .si-num { background: var(--accent); }
+  .empty-state{text-align:center;color:var(--text-muted);font-size:14px;padding:30px 0}
+  .empty-state .empty-icon{font-size:36px;margin-bottom:10px}
 
-  .si-info { flex: 1; min-width: 0; }
-  .si-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .si-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
+  .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;white-space:nowrap;z-index:100;transition:transform .25s ease;pointer-events:none}
+  .toast.show{transform:translateX(-50%) translateY(0)}
 
-  .si-toggle { color: var(--text-muted); font-size: 13px; flex-shrink: 0; transition: transform .2s; }
-  .si-toggle.open { transform: rotate(180deg); }
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
 
-  .si-del { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 2px 6px; flex-shrink: 0; }
-  .si-del:hover { color: var(--danger); }
-
-  /* Panel de datos expandidos */
-  .si-datos {
-    border-top: 1px solid var(--border);
-    padding: 12px;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--surface2);
-  }
-
-  .si-datos.open { display: flex; }
-
-  .si-field { display: flex; flex-direction: column; gap: 1px; }
-  .si-field label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); }
-  .si-field span { font-size: 14px; font-weight: 500; }
-
-  .si-field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-
-  .si-actions { display: flex; gap: 8px; margin-top: 4px; }
-  .si-copy-btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 5px 12px;
-    cursor: pointer;
-    flex: 1;
-  }
-  .si-copy-btn:hover { background: var(--border); }
-  .si-copy-btn.del { color: var(--danger); }
-
-  /* BOTONES */
-  .btn { width: 100%; padding: 13px; border-radius: 10px; border: none; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
-  .btn:active { transform: scale(.97); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-light); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-success { background: var(--success); color: #fff; }
-  .btn-warn { background: var(--warn); color: #fff; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-outline:hover { background: var(--surface2); }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
-
-  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .action-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-
-  /* MANUAL FORM */
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-  .form-group input { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font); font-size: 15px; padding: 10px 12px; width: 100%; outline: none; transition: border-color .15s; }
-  .form-group input:focus { border-color: var(--accent-light); }
-  .form-group input::placeholder { color: var(--text-muted); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* SAVED LIST */
-  .saved-list { display: flex; flex-direction: column; gap: 10px; }
-  .saved-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
-  .saved-item .s-name { font-size: 14px; font-weight: 600; }
-  .saved-item .s-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; }
-  .saved-item .s-actions { display: flex; gap: 8px; margin-top: 6px; }
-  .mini-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--font); font-size: 11px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
-  .mini-btn:hover { background: var(--border); }
-  .mini-btn.del { color: var(--danger); }
-
-  .empty-state { text-align: center; color: var(--text-muted); font-size: 14px; padding: 30px 0; }
-  .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
-
-  /* TOAST */
-  .toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; white-space: nowrap; z-index: 100; transition: transform .25s ease; pointer-events: none; }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* SECCION TITULO */
-  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); }
-
-  /* qrcode lib override */
-  #reader__scan_region { background: transparent !important; }
-  #reader__dashboard { background: var(--surface) !important; color: var(--text-muted) !important; border-top: 1px solid var(--border) !important; }
-  #reader__dashboard_section_swaplink { color: var(--accent-light) !important; }
+  #reader__scan_region{background:transparent!important}
+  #reader__dashboard{background:var(--surface)!important;color:var(--text-muted)!important;border-top:1px solid var(--border)!important}
+  #reader__dashboard_section_swaplink{color:var(--accent-light)!important}
 </style>
 </head>
 <body>
@@ -227,99 +129,74 @@
 </header>
 
 <main>
-  <!-- TABS -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('scan')" id="tab-scan">
-      <span class="icon">📷</span>
-      Escanear QR
-    </button>
-    <button class="tab-btn" onclick="switchTab('manual')" id="tab-manual">
-      <span class="icon">✏️</span>
-      Manual
-    </button>
-    <button class="tab-btn" onclick="switchTab('saved')" id="tab-saved">
-      <span class="icon">📋</span>
-      Guardados
-    </button>
+    <button class="tab-btn active" onclick="switchTab('scan')" id="tab-scan"><span class="icon">📷</span>Escanear QR</button>
+    <button class="tab-btn" onclick="switchTab('manual')" id="tab-manual"><span class="icon">✏️</span>Manual</button>
+    <button class="tab-btn" onclick="switchTab('saved')" id="tab-saved"><span class="icon">📋</span>Guardados</button>
   </div>
 
-  <!-- PANEL SCAN -->
   <div class="panel active" id="panel-scan">
+    <div class="config-row" id="cfg-row">
+      <label for="cfg-max">Límite por sesión</label>
+      <input type="number" id="cfg-max" min="1" max="100" value="8" inputmode="numeric">
+    </div>
 
-    <!-- Barra de sesión -->
     <div class="session-bar" id="session-bar" style="display:none">
-      <div class="s-label">DNI <strong id="s-count">0</strong> / 8</div>
+      <div class="s-label">DNI <strong id="s-count">0</strong> / <span id="s-max">8</span></div>
       <div class="dots" id="s-dots"></div>
     </div>
 
-    <!-- Cámara -->
-    <div class="scanner-box">
-      <div id="reader"></div>
-    </div>
-    <p class="scan-hint" id="scan-hint">Iniciá la sesión para escanear hasta 8 DNI seguidos</p>
+    <div class="scanner-box"><div id="reader"></div></div>
+    <p class="scan-hint" id="scan-hint">Configurá el límite e iniciá la sesión para escanear</p>
 
-    <!-- Controles cámara -->
     <div id="cam-controls">
       <button class="btn btn-primary" id="btn-start" onclick="startSesion()">Iniciar sesión de escaneo</button>
-      <button class="btn btn-danger" id="btn-stop" onclick="pausarCamara()" style="display:none">Pausar cámara</button>
+      <button class="btn btn-danger"  id="btn-stop"  onclick="pausarCamara()" style="display:none">Pausar cámara</button>
       <button class="btn btn-primary" id="btn-resume" onclick="reanudarCamara()" style="display:none">Continuar escaneando</button>
     </div>
 
-    <!-- Lista de DNI escaneados en esta sesión -->
     <div id="session-section" style="display:none">
       <p class="section-title" style="margin-bottom:8px">DNI escaneados en esta sesión</p>
       <div class="session-list" id="session-list"></div>
       <div class="action-row-3" style="margin-top:4px">
         <button class="btn btn-success" onclick="guardarSesion()">Guardar todos</button>
         <button class="btn btn-outline" onclick="copiarSesion()">Copiar todos</button>
-        <button class="btn btn-danger" onclick="limpiarSesion()" style="font-size:12px">Limpiar</button>
+        <button class="btn btn-danger"  onclick="limpiarSesion()" style="font-size:12px">Limpiar</button>
       </div>
     </div>
-
   </div>
 
-  <!-- PANEL MANUAL -->
   <div class="panel" id="panel-manual">
-    <div class="form-group">
-      <label>Apellido</label>
-      <input type="text" id="m-apellido" placeholder="GARCIA" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label>Nombre</label>
-      <input type="text" id="m-nombre" placeholder="JUAN PABLO" autocomplete="off">
+    <p class="section-title">Datos del DNI</p>
+    <div class="form-group"><label>Apellido</label><input type="text" id="m-apellido" placeholder="GARCIA" autocomplete="off"></div>
+    <div class="form-group"><label>Nombre/s</label><input type="text" id="m-nombre" placeholder="JUAN PABLO" autocomplete="off"></div>
+    <div class="form-row">
+      <div class="form-group"><label>N° DNI</label><input type="text" id="m-dni" placeholder="12345678" inputmode="numeric"></div>
+      <div class="form-group"><label>Sexo</label><input type="text" id="m-sexo" placeholder="M / F" maxlength="1"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>N° DNI</label>
-        <input type="text" id="m-dni" placeholder="12345678" inputmode="numeric">
-      </div>
-      <div class="form-group">
-        <label>Sexo</label>
-        <input type="text" id="m-sexo" placeholder="M / F" maxlength="1">
-      </div>
+      <div class="form-group"><label>Fecha Nacimiento</label><input type="text" id="m-nac" placeholder="01/01/1990"></div>
+      <div class="form-group"><label>Fecha Vencimiento</label><input type="text" id="m-venc" placeholder="01/01/2030"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Fecha Nacimiento</label>
-        <input type="text" id="m-nac" placeholder="01/01/1990">
-      </div>
-      <div class="form-group">
-        <label>Vencimiento</label>
-        <input type="text" id="m-venc" placeholder="01/01/2030">
-      </div>
+      <div class="form-group"><label>Ejemplar / Trámite N°</label><input type="text" id="m-ejemplar" placeholder="00001" inputmode="numeric"></div>
+      <div class="form-group"><label>Código de trámite</label><input type="text" id="m-codigo" placeholder="00000000000" inputmode="numeric"></div>
     </div>
-    <div class="form-group">
-      <label>Ejemplar / Trámite</label>
-      <input type="text" id="m-ejemplar" placeholder="00001" autocomplete="off">
+    <div class="form-group"><label>Nacionalidad</label><input type="text" id="m-nacionalidad" placeholder="ARGENTINA" autocomplete="off"></div>
+    <div class="form-group"><label>Lugar de nacimiento</label><input type="text" id="m-lugar" placeholder="SALTA" autocomplete="off"></div>
+    <div class="form-group"><label>Domicilio</label><input type="text" id="m-domicilio" placeholder="AV. BELGRANO 1234" autocomplete="off"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Localidad</label><input type="text" id="m-localidad" placeholder="SALTA" autocomplete="off"></div>
+      <div class="form-group"><label>Provincia</label><input type="text" id="m-provincia" placeholder="SALTA" autocomplete="off"></div>
     </div>
+    <div class="form-group"><label>Cuil / Cuit</label><input type="text" id="m-cuil" placeholder="20-12345678-9" inputmode="numeric"></div>
     <button class="btn btn-primary" onclick="guardarManual()">Agregar a sesión</button>
   </div>
 
-  <!-- PANEL SAVED -->
   <div class="panel" id="panel-saved">
     <div class="action-row">
       <button class="btn btn-outline" onclick="exportarTodos()">Exportar todo</button>
-      <button class="btn btn-danger" onclick="borrarTodos()" style="font-size:13px">Borrar todo</button>
+      <button class="btn btn-danger"  onclick="borrarTodos()" style="font-size:13px">Borrar todo</button>
     </div>
     <div class="saved-list" id="saved-list"></div>
   </div>
@@ -328,83 +205,114 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const MAX_DNI = 8;
-let html5QrCode = null;
-let scanning = false;
-let sesionActiva = false;
-let sesionDNI = []; // DNI de la sesión actual (no guardados aún)
-let cooldown = false; // evitar doble lectura
+/* ══════════════ ESTADO GLOBAL ══════════════ */
+const DEFAULT_MAX = 8;
+const STORAGE_KEY = 'dni_registros';
+const MAX_KEY     = 'dni_max';
 
-// ── PARSEO DNI ARGENTINO (QR y PDF417) ───────────────────
+let html5QrCode   = null;
+let scanning      = false;
+let sesionActiva  = false;
+let sesionDNI     = [];
+let cooldown      = false;
+
+/* ══════════════ UTILIDADES ══════════════ */
+function limpiar(str) { return (str || '').toString().trim().replace(/\s+/g, ' '); }
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function getMax() {
+  const v = parseInt(document.getElementById('cfg-max').value, 10);
+  if (Number.isFinite(v) && v >= 1 && v <= 100) return v;
+  return DEFAULT_MAX;
+}
+
+/* ══════════════ PARSER ══════════════ */
 function parsearDNI(texto) {
-  // Intentar QR primero (separado por @)
-  const resQR = parsearQR(texto);
-  if (resQR) return resQR;
+  let t = (texto || '').trim();
+  if (!t) return null;
 
-  // Intentar PDF417 (DNI viejo, separado por @ pero distinto orden)
-  const resPDF = parsearPDF417(texto);
-  if (resPDF) return resPDF;
+  let partes;
+  if (t.includes('@')) partes = t.split('@');
+  else if (t.includes('\t')) partes = t.split('\t');
+  else return null;
 
-  return null;
-}
+  partes = partes.map(x => x.trim());
+  while (partes.length && partes[0] === '') partes.shift();
+  while (partes.length && partes[partes.length - 1] === '') partes.pop();
+  if (partes.length < 4) return null;
 
-function parsearQR(texto) {
-  // Formato QR nuevo: @APELLIDO@NOMBRE@SEXO@DNI@EJEMPLAR@NACIMIENTO@VENCIMIENTO@...
-  const raw = texto.startsWith('@') ? texto.substring(1) : texto;
-  const p = raw.split('@');
-  if (p.length < 7) return null;
-  // Validar que tenga algo parecido a un DNI (números)
-  const posibleDNI = limpiar(p[4] || p[3]);
-  if (!/^\d{6,8}$/.test(posibleDNI.replace(/\./g,''))) return null;
-  return {
-    apellido:    limpiar(p[1] || p[0]),
-    nombre:      limpiar(p[2] || p[1]),
-    sexo:        limpiar(p[3] || ''),
-    dni:         posibleDNI.replace(/\./g,''),
-    ejemplar:    limpiar(p[5] || ''),
-    nacimiento:  limpiar(p[6] || ''),
-    vencimiento: limpiar(p[7] || ''),
-    fuente: 'QR',
-    ts: new Date().toISOString()
-  };
-}
-
-function parsearPDF417(texto) {
-  // Formato PDF417 DNI argentino viejo:
-  // APELLIDO@NOMBRE@DNI@SEXO@NACIMIENTO@...
-  // o separado por espacios / tabulaciones en algunos modelos
-  let p = null;
-  if (texto.includes('@')) {
-    p = texto.split('@');
-  } else if (texto.includes('\t')) {
-    p = texto.split('\t');
-  }
-  if (!p || p.length < 5) return null;
-
-  // Buscar campo que parezca DNI (6-8 dígitos)
-  let dniIdx = p.findIndex(x => /^\d{6,8}$/.test(x.trim().replace(/\./g,'')));
+  const dniIdx = partes.findIndex(x => /^\d{6,8}$/.test(x.replace(/\./g, '')));
   if (dniIdx === -1) return null;
+  const dni = partes[dniIdx].replace(/\./g, '');
 
-  // Heurística de posición para PDF417 viejo
+  const esSexo = x => /^[MFmf]$/.test((x || '').trim());
+
+  let apellido = '', nombre = '', sexo = '', ejemplar = '',
+      nacimiento = '', vencimiento = '', codigo = '';
+
+  if (dniIdx >= 3 && esSexo(partes[dniIdx - 1])) {
+    apellido    = partes[dniIdx - 3];
+    nombre      = partes[dniIdx - 2];
+    sexo        = partes[dniIdx - 1].toUpperCase();
+    ejemplar    = partes[dniIdx + 1] || '';
+    nacimiento  = partes[dniIdx + 2] || '';
+    vencimiento = partes[dniIdx + 3] || '';
+    codigo      = partes[dniIdx + 4] || '';
+  } else if (esSexo(partes[dniIdx + 1])) {
+    apellido    = partes[dniIdx - 2] || '';
+    nombre      = partes[dniIdx - 1] || '';
+    sexo        = partes[dniIdx + 1].toUpperCase();
+    nacimiento  = partes[dniIdx + 2] || '';
+    vencimiento = partes[dniIdx + 3] || '';
+    ejemplar    = partes[dniIdx + 4] || '';
+    codigo      = partes[dniIdx + 5] || '';
+  } else {
+    apellido    = partes[dniIdx - 3] || partes[dniIdx - 2] || partes[0] || '';
+    nombre      = partes[dniIdx - 2] || partes[dniIdx - 1] || partes[1] || '';
+    ejemplar    = partes[dniIdx + 1] || '';
+    nacimiento  = partes[dniIdx + 2] || '';
+    vencimiento = partes[dniIdx + 3] || '';
+  }
+
+  if (!codigo && partes[0] && /^\d{10,}$/.test(partes[0])) codigo = partes[0];
+
+  if (!apellido && !nombre) return null;
+
+  const fuente = t.includes('@') ? 'QR' : 'PDF417';
+
   return {
-    apellido:    limpiar(p[0] || ''),
-    nombre:      limpiar(p[1] || ''),
-    dni:         limpiar(p[dniIdx]).replace(/\./g,''),
-    sexo:        limpiar(p[dniIdx + 1] || ''),
-    nacimiento:  limpiar(p[dniIdx + 2] || ''),
-    vencimiento: limpiar(p[dniIdx + 3] || ''),
-    ejemplar:    limpiar(p[dniIdx + 4] || ''),
-    fuente: 'PDF417',
-    ts: new Date().toISOString()
+    apellido: limpiar(apellido),
+    nombre:   limpiar(nombre),
+    sexo, dni,
+    ejemplar:    limpiar(ejemplar),
+    nacimiento:  limpiar(nacimiento),
+    vencimiento: limpiar(vencimiento),
+    codigo:      limpiar(codigo),
+    nacionalidad: '', lugar: '', domicilio: '',
+    localidad: '', provincia: '', cuil: '',
+    fuente, ts: new Date().toISOString()
   };
 }
 
-function limpiar(str) { return (str||'').trim().replace(/\s+/g,' '); }
+/* ══════════════ CONTROL DE BOTONES ══════════════ */
+function refrescarControles() {
+  const completo = sesionDNI.length >= getMax();
+  document.getElementById('btn-start').style.display  = (!sesionActiva) ? 'block' : 'none';
+  document.getElementById('btn-stop').style.display   = (sesionActiva && scanning) ? 'block' : 'none';
+  document.getElementById('btn-resume').style.display = (sesionActiva && !scanning && !completo) ? 'block' : 'none';
+  document.getElementById('cfg-row').style.display    = sesionActiva ? 'none' : 'flex';
+}
 
-// ── SESION ────────────────────────────────────────────────
+/* ══════════════ SESIÓN ══════════════ */
 function startSesion() {
   sesionDNI = [];
   sesionActiva = true;
+  cooldown = false;
   renderSessionBar();
   document.getElementById('session-bar').style.display = 'flex';
   document.getElementById('session-section').style.display = 'none';
@@ -413,66 +321,45 @@ function startSesion() {
 
 function iniciarCamara() {
   if (html5QrCode) {
-    html5QrCode.clear();
+    try { html5QrCode.clear(); } catch (e) {}
     html5QrCode = null;
   }
-  html5QrCode = new Html5Qrcode("reader");
+  html5QrCode = new Html5Qrcode('reader');
   const config = { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 };
+  const formats = { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.PDF_417] };
 
-  Html5Qrcode.getCameras().then(cams => {
-    const cam = cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1];
-    return html5QrCode.start(
-      { deviceId: { exact: cam.id } },
-      { ...config, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.PDF_417 ] },
-      onQRSuccess, () => {}
-    );
-  }).catch(() => {
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { ...config, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.PDF_417 ] },
-      onQRSuccess, () => {}
-    );
-  });
-
-  document.getElementById('btn-start').style.display = 'none';
-  document.getElementById('btn-stop').style.display = 'block';
-  document.getElementById('btn-resume').style.display = 'none';
-  scanning = true;
-  actualizarHint();
+  Html5Qrcode.getCameras()
+    .then(cams => {
+      const cam = cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1];
+      return html5QrCode.start({ deviceId: { exact: cam.id } }, { ...config, ...formats }, onQRSuccess, () => {});
+    })
+    .catch(() => {
+      return html5QrCode.start({ facingMode: 'environment' }, { ...config, ...formats }, onQRSuccess, () => {});
+    })
+    .then(() => { scanning = true; refrescarControles(); actualizarHint(); })
+    .catch(() => { scanning = false; refrescarControles(); toast('No se pudo iniciar la cámara'); });
 }
 
 function pausarCamara() {
-  if (html5QrCode && scanning) {
-    html5QrCode.stop().then(() => {
-      scanning = false;
-      document.getElementById('btn-stop').style.display = 'none';
-      document.getElementById('btn-resume').style.display = 'block';
-    });
-  }
+  if (!html5QrCode || !scanning) { scanning = false; refrescarControles(); return Promise.resolve(); }
+  return html5QrCode.stop()
+    .catch(() => {})
+    .then(() => { scanning = false; refrescarControles(); renderSessionBar(); });
 }
 
 function reanudarCamara() {
-  if (sesionDNI.length >= MAX_DNI) {
-    toast(`Límite de ${MAX_DNI} DNI alcanzado`);
-    return;
-  }
+  if (sesionDNI.length >= getMax()) { toast(`Límite de ${getMax()} DNI alcanzado`); return; }
   iniciarCamara();
 }
 
 function onQRSuccess(decodedText) {
   if (cooldown) return;
 
-  // Evitar duplicado en la misma sesión
   const datos = parsearDNI(decodedText);
   if (!datos) { toast('Código no reconocido como DNI'); return; }
 
-  const yaExiste = sesionDNI.some(d => d.dni === datos.dni);
-  if (yaExiste) {
-    toast(`DNI ${datos.dni} ya fue escaneado`);
-    return;
-  }
+  if (sesionDNI.some(d => d.dni === datos.dni)) { toast(`DNI ${datos.dni} ya escaneado`); return; }
 
-  // Cooldown 2s para no leer el mismo QR varias veces
   cooldown = true;
   setTimeout(() => { cooldown = false; }, 2000);
 
@@ -480,10 +367,8 @@ function onQRSuccess(decodedText) {
   sesionDNI.push(datos);
   renderSessionBar();
   renderSessionList(nuevoIdx);
-
   document.getElementById('session-section').style.display = 'block';
 
-  // Quitar resaltado "nuevo" después de 3s
   setTimeout(() => {
     const el = document.getElementById(`si-${nuevoIdx}`);
     if (el) el.classList.remove('nuevo');
@@ -491,32 +376,33 @@ function onQRSuccess(decodedText) {
     if (num) num.style.background = 'var(--success)';
   }, 3000);
 
-  if (sesionDNI.length >= MAX_DNI) {
-    pausarCamara();
-    toast(`✅ ${MAX_DNI} DNI completados`);
-    document.getElementById('btn-resume').style.display = 'none';
-    actualizarHint();
+  const max = getMax();
+  if (sesionDNI.length >= max) {
+    pausarCamara().then(() => toast(`✅ ${max} DNI completados`));
   } else {
-    toast(`DNI ${sesionDNI.length} de ${MAX_DNI} leído`);
-    actualizarHint();
+    toast(`DNI ${sesionDNI.length} de ${max} leído`);
   }
+  actualizarHint();
 }
 
 function actualizarHint() {
   const h = document.getElementById('scan-hint');
+  const max = getMax();
   if (!sesionActiva) {
-    h.textContent = 'Iniciá la sesión para escanear QR o código de barras de hasta 8 DNI';
-  } else if (sesionDNI.length >= MAX_DNI) {
-    h.textContent = `Límite de ${MAX_DNI} DNI alcanzado. Guardá o copiá los datos.`;
+    h.textContent = `Configurá el límite e iniciá la sesión para escanear hasta ${max} DNI`;
+  } else if (sesionDNI.length >= max) {
+    h.textContent = `Límite de ${max} DNI alcanzado. Guardá o copiá los datos.`;
   } else {
-    h.textContent = `Apuntá al QR o código de barras del DNI. Próximo: ${sesionDNI.length + 1} de ${MAX_DNI}`;
+    h.textContent = `Apuntá al QR del DNI. Próximo: ${sesionDNI.length + 1} de ${max}`;
   }
 }
 
 function renderSessionBar() {
+  const max = getMax();
   document.getElementById('s-count').textContent = sesionDNI.length;
+  document.getElementById('s-max').textContent   = max;
   const dotsEl = document.getElementById('s-dots');
-  dotsEl.innerHTML = Array.from({length: MAX_DNI}, (_, i) => {
+  dotsEl.innerHTML = Array.from({ length: max }, (_, i) => {
     let cls = 'dot';
     if (i < sesionDNI.length) cls += ' filled';
     else if (i === sesionDNI.length && scanning) cls += ' current';
@@ -534,11 +420,11 @@ function renderSessionList(nuevoIdx = -1) {
       <div class="si-header" onclick="toggleDatos(${i})">
         <div class="si-num">${i + 1}</div>
         <div class="si-info">
-          <div class="si-name">${d.apellido}, ${d.nombre}</div>
+          <div class="si-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
           <div class="si-meta">
-            <span>DNI ${d.dni}</span>
-            ${d.sexo ? `<span>${d.sexo}</span>` : ''}
-            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:10px;padding:0 4px">${d.fuente}</span>
+            <span>DNI ${esc(d.dni)}</span>
+            ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
+            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:10px;padding:0 4px">${esc(d.fuente)}</span>
           </div>
         </div>
         <span class="si-toggle ${esNuevo ? 'open' : ''}" id="toggle-${i}">▼</span>
@@ -546,28 +432,31 @@ function renderSessionList(nuevoIdx = -1) {
       </div>
       <div class="si-datos ${esNuevo ? 'open' : ''}" id="${id}">
         <div class="si-field-row">
-          <div class="si-field"><label>Apellido</label><span>${d.apellido}</span></div>
-          <div class="si-field" style="grid-column:span 2"><label>Nombre</label><span>${d.nombre}</span></div>
+          <div class="si-field"><label>Apellido</label><span>${esc(d.apellido) || '—'}</span></div>
+          <div class="si-field" style="grid-column:span 2"><label>Nombre/s</label><span>${esc(d.nombre) || '—'}</span></div>
         </div>
         <div class="si-field-row">
-          <div class="si-field"><label>DNI N°</label><span>${d.dni}</span></div>
-          <div class="si-field"><label>Sexo</label><span>${d.sexo || '—'}</span></div>
-          <div class="si-field"><label>Ejemplar</label><span>${d.ejemplar || '—'}</span></div>
+          <div class="si-field"><label>DNI N°</label><span>${esc(d.dni) || '—'}</span></div>
+          <div class="si-field"><label>Sexo</label><span>${esc(d.sexo) || '—'}</span></div>
+          <div class="si-field"><label>Ejemplar</label><span>${esc(d.ejemplar) || '—'}</span></div>
         </div>
         <div class="si-field-row">
-          <div class="si-field"><label>Nacimiento</label><span>${d.nacimiento || '—'}</span></div>
-          <div class="si-field"><label>Vencimiento</label><span>${d.vencimiento || '—'}</span></div>
-          <div class="si-field"><label>Fuente</label><span>${d.fuente}</span></div>
+          <div class="si-field"><label>Nacimiento</label><span>${esc(d.nacimiento) || '—'}</span></div>
+          <div class="si-field"><label>Vencimiento</label><span>${esc(d.vencimiento) || '—'}</span></div>
+          <div class="si-field"><label>Fuente</label><span>${esc(d.fuente)}</span></div>
         </div>
+        ${d.codigo ? `<div class="si-field"><label>Código de trámite</label><span>${esc(d.codigo)}</span></div>` : ''}
+        ${d.nacionalidad ? `<div class="si-field-row"><div class="si-field"><label>Nacionalidad</label><span>${esc(d.nacionalidad)}</span></div><div class="si-field" style="grid-column:span 2"><label>Lugar de nacimiento</label><span>${esc(d.lugar) || '—'}</span></div></div>` : ''}
+        ${d.domicilio ? `<div class="si-field"><label>Domicilio</label><span>${esc(d.domicilio)}${d.localidad ? ', ' + esc(d.localidad) : ''}${d.provincia ? ' — ' + esc(d.provincia) : ''}</span></div>` : ''}
+        ${d.cuil ? `<div class="si-field"><label>CUIL / CUIT</label><span>${esc(d.cuil)}</span></div>` : ''}
         <div class="si-actions">
-          <button class="si-copy-btn" onclick="copiarDatos(${JSON.stringify(d).replace(/"/g,'&quot;')})">Copiar</button>
+          <button class="si-copy-btn" onclick="copiarDeSesion(${i})">Copiar</button>
           <button class="si-copy-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
         </div>
       </div>
     </div>`;
   }).join('');
 
-  // Si hay nuevo, hacer scroll hasta él
   if (nuevoIdx >= 0) {
     setTimeout(() => {
       const el = document.getElementById(`si-${nuevoIdx}`);
@@ -577,11 +466,8 @@ function renderSessionList(nuevoIdx = -1) {
 }
 
 function toggleDatos(i) {
-  const panel = document.getElementById(`si-datos-${i}`);
-  const toggle = document.getElementById(`toggle-${i}`);
-  const item = document.getElementById(`si-${i}`);
-  const abierto = panel.classList.toggle('open');
-  toggle.classList.toggle('open', abierto);
+  document.getElementById(`si-datos-${i}`).classList.toggle('open');
+  document.getElementById(`toggle-${i}`).classList.toggle('open');
 }
 
 function quitarDeSesion(idx) {
@@ -589,22 +475,30 @@ function quitarDeSesion(idx) {
   renderSessionBar();
   renderSessionList();
   if (!sesionDNI.length) document.getElementById('session-section').style.display = 'none';
+  refrescarControles();
   actualizarHint();
 }
 
 function guardarSesion() {
   if (!sesionDNI.length) { toast('No hay DNI en la sesión'); return; }
   const lista = cargarLista();
-  sesionDNI.forEach(d => lista.unshift(d));
-  localStorage.setItem('dni_registros', JSON.stringify(lista));
-  toast(`${sesionDNI.length} DNI guardados`);
+  const existentes = new Set(lista.map(d => d.dni));
+  let nuevos = 0, repetidos = 0;
+  sesionDNI.forEach(d => {
+    if (existentes.has(d.dni)) { repetidos++; return; }
+    lista.unshift(d); existentes.add(d.dni); nuevos++;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+  toast(repetidos
+    ? `${nuevos} guardados · ${repetidos} ya existían`
+    : `${nuevos} DNI guardados`);
   limpiarSesion();
 }
 
 function copiarSesion() {
   if (!sesionDNI.length) { toast('No hay DNI en la sesión'); return; }
   const txt = sesionDNI.map((d, i) =>
-    `[${i+1}] ${d.apellido}, ${d.nombre} | DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`
+    `[${i + 1}] ${d.apellido}, ${d.nombre} | DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`
   ).join('\n');
   navigator.clipboard.writeText(txt)
     .then(() => toast('Datos copiados al portapapeles'))
@@ -612,20 +506,27 @@ function copiarSesion() {
 }
 
 function limpiarSesion() {
-  pausarCamara();
-  sesionDNI = [];
   sesionActiva = false;
-  scanning = false;
+  sesionDNI = [];
+  cooldown = false;
   document.getElementById('session-bar').style.display = 'none';
   document.getElementById('session-section').style.display = 'none';
-  document.getElementById('btn-start').style.display = 'block';
-  document.getElementById('btn-stop').style.display = 'none';
-  document.getElementById('btn-resume').style.display = 'none';
-  if (html5QrCode) { html5QrCode.clear(); html5QrCode = null; }
-  actualizarHint();
+
+  const terminar = () => {
+    scanning = false;
+    if (html5QrCode) { try { html5QrCode.clear(); } catch (e) {} html5QrCode = null; }
+    refrescarControles();
+    actualizarHint();
+  };
+
+  if (html5QrCode && scanning) {
+    html5QrCode.stop().catch(() => {}).then(terminar);
+  } else {
+    terminar();
+  }
 }
 
-// ── MANUAL ────────────────────────────────────────────────
+/* ══════════════ MANUAL ══════════════ */
 function guardarManual() {
   const apellido = document.getElementById('m-apellido').value.trim();
   const nombre   = document.getElementById('m-nombre').value.trim();
@@ -634,55 +535,73 @@ function guardarManual() {
 
   const datos = {
     apellido, nombre,
-    sexo:        document.getElementById('m-sexo').value.trim().toUpperCase(),
+    sexo:         document.getElementById('m-sexo').value.trim().toUpperCase(),
     dni,
-    ejemplar:    document.getElementById('m-ejemplar').value.trim(),
-    nacimiento:  document.getElementById('m-nac').value.trim(),
-    vencimiento: document.getElementById('m-venc').value.trim(),
+    ejemplar:     document.getElementById('m-ejemplar').value.trim(),
+    nacimiento:   document.getElementById('m-nac').value.trim(),
+    vencimiento:  document.getElementById('m-venc').value.trim(),
+    codigo:       document.getElementById('m-codigo').value.trim(),
+    nacionalidad: document.getElementById('m-nacionalidad').value.trim().toUpperCase(),
+    lugar:        document.getElementById('m-lugar').value.trim().toUpperCase(),
+    domicilio:    document.getElementById('m-domicilio').value.trim().toUpperCase(),
+    localidad:    document.getElementById('m-localidad').value.trim().toUpperCase(),
+    provincia:    document.getElementById('m-provincia').value.trim().toUpperCase(),
+    cuil:         document.getElementById('m-cuil').value.trim(),
     fuente: 'Manual',
     ts: new Date().toISOString()
   };
 
-  // Agregar a sesión si hay una activa, sino guardar directo
-  if (sesionActiva && sesionDNI.length < MAX_DNI) {
-    const yaExiste = sesionDNI.some(d => d.dni === datos.dni);
-    if (yaExiste) { toast('Ese DNI ya está en la sesión'); return; }
+  if (sesionActiva && sesionDNI.length < getMax()) {
+    if (sesionDNI.some(d => d.dni === datos.dni)) { toast('Ese DNI ya está en la sesión'); return; }
+    const nuevoIdx = sesionDNI.length;
     sesionDNI.push(datos);
     renderSessionBar();
-    renderSessionList();
+    renderSessionList(nuevoIdx);
     document.getElementById('session-section').style.display = 'block';
     switchTab('scan');
     toast('Agregado a la sesión actual');
   } else {
     const lista = cargarLista();
+    if (lista.some(d => d.dni === datos.dni)) { toast('Ese DNI ya está guardado'); return; }
     lista.unshift(datos);
-    localStorage.setItem('dni_registros', JSON.stringify(lista));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
     toast('Guardado correctamente');
   }
 
-  ['m-apellido','m-nombre','m-sexo','m-dni','m-ejemplar','m-nac','m-venc']
+  ['m-apellido','m-nombre','m-sexo','m-dni','m-ejemplar','m-nac','m-venc',
+   'm-codigo','m-nacionalidad','m-lugar','m-domicilio','m-localidad','m-provincia','m-cuil']
     .forEach(id => document.getElementById(id).value = '');
 }
 
-// ── STORAGE ───────────────────────────────────────────────
+/* ══════════════ STORAGE ══════════════ */
 function cargarLista() {
-  try { return JSON.parse(localStorage.getItem('dni_registros') || '[]'); }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
 }
 
 function borrarRegistro(idx) {
   const lista = cargarLista();
   lista.splice(idx, 1);
-  localStorage.setItem('dni_registros', JSON.stringify(lista));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
   renderSaved();
   toast('Registro eliminado');
 }
 
 function borrarTodos() {
   if (!confirm('¿Borrar todos los registros guardados?')) return;
-  localStorage.removeItem('dni_registros');
+  localStorage.removeItem(STORAGE_KEY);
   renderSaved();
   toast('Registros eliminados');
+}
+
+function copiarDeSesion(idx) {
+  const d = sesionDNI[idx];
+  if (d) copiarDatos(d);
+}
+
+function copiarGuardado(idx) {
+  const d = cargarLista()[idx];
+  if (d) copiarDatos(d);
 }
 
 function copiarDatos(datos) {
@@ -690,17 +609,24 @@ function copiarDatos(datos) {
     `APELLIDO: ${datos.apellido}`,
     `NOMBRE: ${datos.nombre}`,
     `DNI: ${datos.dni}`,
-    datos.sexo        ? `SEXO: ${datos.sexo}` : '',
-    datos.nacimiento  ? `NACIMIENTO: ${datos.nacimiento}` : '',
-    datos.vencimiento ? `VENCIMIENTO: ${datos.vencimiento}` : '',
-    datos.ejemplar    ? `EJEMPLAR: ${datos.ejemplar}` : '',
+    datos.sexo         ? `SEXO: ${datos.sexo}` : '',
+    datos.nacimiento   ? `NACIMIENTO: ${datos.nacimiento}` : '',
+    datos.vencimiento  ? `VENCIMIENTO: ${datos.vencimiento}` : '',
+    datos.ejemplar     ? `EJEMPLAR: ${datos.ejemplar}` : '',
+    datos.codigo       ? `CODIGO TRAMITE: ${datos.codigo}` : '',
+    datos.nacionalidad ? `NACIONALIDAD: ${datos.nacionalidad}` : '',
+    datos.lugar        ? `LUGAR NACIMIENTO: ${datos.lugar}` : '',
+    datos.domicilio    ? `DOMICILIO: ${datos.domicilio}` : '',
+    datos.localidad    ? `LOCALIDAD: ${datos.localidad}` : '',
+    datos.provincia    ? `PROVINCIA: ${datos.provincia}` : '',
+    datos.cuil         ? `CUIL/CUIT: ${datos.cuil}` : '',
   ].filter(Boolean).join('\n');
   navigator.clipboard.writeText(txt)
     .then(() => toast('Datos copiados'))
     .catch(() => toast('No se pudo copiar'));
 }
 
-// ── RENDER SAVED ──────────────────────────────────────────
+/* ══════════════ GUARDADOS ══════════════ */
 function renderSaved() {
   const lista = cargarLista();
   const cont = document.getElementById('saved-list');
@@ -710,15 +636,15 @@ function renderSaved() {
   }
   cont.innerHTML = lista.map((d, i) => `
     <div class="saved-item">
-      <div class="s-name">${d.apellido}, ${d.nombre}</div>
+      <div class="s-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
       <div class="s-meta">
-        <span>DNI ${d.dni}</span>
-        ${d.sexo ? `<span>${d.sexo}</span>` : ''}
-        <span>${d.fuente}</span>
+        <span>DNI ${esc(d.dni)}</span>
+        ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
+        <span>${esc(d.fuente)}</span>
         <span>${new Date(d.ts).toLocaleDateString('es-AR')}</span>
       </div>
       <div class="s-actions">
-        <button class="mini-btn" onclick='copiarDatos(${JSON.stringify(d)})'>Copiar</button>
+        <button class="mini-btn" onclick="copiarGuardado(${i})">Copiar</button>
         <button class="mini-btn del" onclick="borrarRegistro(${i})">Eliminar</button>
       </div>
     </div>`).join('');
@@ -728,37 +654,64 @@ function exportarTodos() {
   const lista = cargarLista();
   if (!lista.length) { toast('No hay datos para exportar'); return; }
   const txt = lista.map((d, i) => [
-    `[${i+1}] ${d.apellido}, ${d.nombre}`,
+    `[${i + 1}] ${d.apellido}, ${d.nombre}`,
     `DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`,
-    `Ejemplar: ${d.ejemplar} | Fuente: ${d.fuente}`,
+    `Ejemplar: ${d.ejemplar} | Código trámite: ${d.codigo || '—'} | Fuente: ${d.fuente}`,
+    d.nacionalidad ? `Nacionalidad: ${d.nacionalidad} | Lugar nac.: ${d.lugar || '—'}` : '',
+    d.domicilio    ? `Domicilio: ${d.domicilio}, ${d.localidad || ''} — ${d.provincia || ''}` : '',
+    d.cuil         ? `CUIL/CUIT: ${d.cuil}` : '',
     `Registro: ${new Date(d.ts).toLocaleString('es-AR')}`,
     ''
-  ].join('\n')).join('\n');
+  ].filter(Boolean).join('\n')).join('\n');
+
   const blob = new Blob([txt], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href = url;
-  a.download = `registros_dni_${new Date().toISOString().slice(0,10)}.txt`;
+  a.download = `registros_dni_${new Date().toISOString().slice(0, 10)}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// ── TABS ──────────────────────────────────────────────────
+/* ══════════════ TABS ══════════════ */
 function switchTab(tab) {
-  ['scan','manual','saved'].forEach(t => {
+  ['scan', 'manual', 'saved'].forEach(t => {
     document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
     document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
   });
   if (tab === 'saved') renderSaved();
 }
 
-// ── TOAST ─────────────────────────────────────────────────
+/* ══════════════ TOAST ══════════════ */
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2500);
 }
+
+/* ══════════════ CONFIG PERSISTENTE ══════════════ */
+(function initConfig() {
+  const cfg = document.getElementById('cfg-max');
+  const saved = parseInt(localStorage.getItem(MAX_KEY) || '', 10);
+  if (Number.isFinite(saved) && saved >= 1 && saved <= 100) cfg.value = saved;
+
+  const persist = () => {
+    let v = parseInt(cfg.value, 10);
+    if (!Number.isFinite(v) || v < 1) v = 1;
+    if (v > 100) v = 100;
+    cfg.value = v;
+    localStorage.setItem(MAX_KEY, String(v));
+    renderSessionBar();
+    refrescarControles();
+    actualizarHint();
+  };
+  cfg.addEventListener('change', persist);
+  cfg.addEventListener('blur', persist);
+  refrescarControles();
+  actualizarHint();
+})();
 </script>
 </body>
 </html>
