@@ -24,9 +24,9 @@
 
   main{flex:1;padding:20px 16px;max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px}
 
-  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .tab-btn{background:none;border:none;color:var(--text-muted);font-size:12px;font-family:var(--font);font-weight:500;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .15s,color .15s}
-  .tab-btn .icon{font-size:18px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .tab-btn{background:none;border:none;color:var(--text-muted);font-size:11px;font-family:var(--font);font-weight:500;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .15s,color .15s}
+  .tab-btn .icon{font-size:16px}
   .tab-btn.active{background:var(--accent);color:#fff}
   .tab-btn:not(.active):hover{background:var(--surface2);color:var(--text)}
 
@@ -73,7 +73,11 @@
   .si-field{display:flex;flex-direction:column;gap:1px}
   .si-field label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
   .si-field span{font-size:14px;font-weight:500;word-break:break-word}
+  .si-field input{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:6px 8px;width:100%;outline:none;margin-top:2px}
+  .si-field input:focus{border-color:var(--accent-light)}
+  .si-field select{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:6px 8px;width:100%;outline:none;margin-top:2px}
   .si-field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .si-field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .si-actions{display:flex;gap:8px;margin-top:4px}
   .si-copy-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;flex:1}
   .si-copy-btn:hover{background:var(--border)}
@@ -94,9 +98,10 @@
 
   .form-group{display:flex;flex-direction:column;gap:6px}
   .form-group label{font-size:12px;font-weight:600;color:var(--text-muted)}
-  .form-group input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:15px;padding:10px 12px;width:100%;outline:none;transition:border-color .15s}
-  .form-group input:focus{border-color:var(--accent-light)}
-  .form-group input::placeholder{color:var(--text-muted)}
+  .form-group input, .form-group textarea, .form-group select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:14px;padding:10px 12px;width:100%;outline:none;transition:border-color .15s}
+  .form-group textarea{font-size:13px;line-height:1.4;resize:vertical;min-height:60px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus{border-color:var(--accent-light)}
+  .form-group input::placeholder, .form-group textarea::placeholder{color:var(--text-muted)}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
   .saved-list{display:flex;flex-direction:column;gap:10px}
@@ -116,6 +121,13 @@
 
   .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
 
+  .msg-person{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .msg-person .mp-header{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .msg-person .mp-name{font-size:13px;font-weight:600}
+  .msg-person .mp-dni{font-size:11px;color:var(--text-muted)}
+
+  .preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text-muted);max-height:220px;overflow:auto}
+
   #reader__scan_region{background:transparent!important}
   #reader__dashboard{background:var(--surface)!important;color:var(--text-muted)!important;border-top:1px solid var(--border)!important}
   #reader__dashboard_section_swaplink{color:var(--accent-light)!important}
@@ -130,11 +142,13 @@
 
 <main>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('scan')" id="tab-scan"><span class="icon">📷</span>Escanear QR</button>
+    <button class="tab-btn active" onclick="switchTab('scan')" id="tab-scan"><span class="icon">📷</span>Escanear</button>
     <button class="tab-btn" onclick="switchTab('manual')" id="tab-manual"><span class="icon">✏️</span>Manual</button>
+    <button class="tab-btn" onclick="switchTab('mensaje')" id="tab-mensaje"><span class="icon">📝</span>Mensaje</button>
     <button class="tab-btn" onclick="switchTab('saved')" id="tab-saved"><span class="icon">📋</span>Guardados</button>
   </div>
 
+  <!-- ═══ SCAN ═══ -->
   <div class="panel active" id="panel-scan">
     <div class="config-row" id="cfg-row">
       <label for="cfg-max">Límite por sesión</label>
@@ -160,12 +174,13 @@
       <div class="session-list" id="session-list"></div>
       <div class="action-row-3" style="margin-top:4px">
         <button class="btn btn-success" onclick="guardarSesion()">Guardar todos</button>
-        <button class="btn btn-outline" onclick="copiarSesion()">Copiar todos</button>
+        <button class="btn btn-outline" onclick="irAMensaje()">Ir a Mensaje</button>
         <button class="btn btn-danger"  onclick="limpiarSesion()" style="font-size:12px">Limpiar</button>
       </div>
     </div>
   </div>
 
+  <!-- ═══ MANUAL ═══ -->
   <div class="panel" id="panel-manual">
     <p class="section-title">Datos del DNI</p>
     <div class="form-group"><label>Apellido</label><input type="text" id="m-apellido" placeholder="GARCIA" autocomplete="off"></div>
@@ -179,11 +194,9 @@
       <div class="form-group"><label>Fecha Vencimiento</label><input type="text" id="m-venc" placeholder="01/01/2030"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Ejemplar / Trámite N°</label><input type="text" id="m-ejemplar" placeholder="00001" inputmode="numeric"></div>
+      <div class="form-group"><label>Ejemplar</label><input type="text" id="m-ejemplar" placeholder="00001" inputmode="numeric"></div>
       <div class="form-group"><label>Código de trámite</label><input type="text" id="m-codigo" placeholder="00000000000" inputmode="numeric"></div>
     </div>
-    <div class="form-group"><label>Nacionalidad</label><input type="text" id="m-nacionalidad" placeholder="ARGENTINA" autocomplete="off"></div>
-    <div class="form-group"><label>Lugar de nacimiento</label><input type="text" id="m-lugar" placeholder="SALTA" autocomplete="off"></div>
     <div class="form-group"><label>Domicilio</label><input type="text" id="m-domicilio" placeholder="AV. BELGRANO 1234" autocomplete="off"></div>
     <div class="form-row">
       <div class="form-group"><label>Localidad</label><input type="text" id="m-localidad" placeholder="SALTA" autocomplete="off"></div>
@@ -193,6 +206,33 @@
     <button class="btn btn-primary" onclick="guardarManual()">Agregar a sesión</button>
   </div>
 
+  <!-- ═══ MENSAJE ═══ -->
+  <div class="panel" id="panel-mensaje">
+    <p class="section-title">Encabezado</p>
+    <div class="form-group">
+      <textarea id="msg-head" rows="14" placeholder="Escribí el encabezado del mensaje..."></textarea>
+    </div>
+
+    <p class="section-title">Personas identificadas <span id="msg-count" style="color:var(--accent-light)"></span></p>
+    <div id="msg-personas"></div>
+
+    <p class="section-title">Pie / Informante</p>
+    <div class="form-group">
+      <textarea id="msg-foot" rows="3" placeholder="Escribí el pie del mensaje..."></textarea>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="copiarMensaje()">Copiar mensaje</button>
+      <button class="btn btn-outline" onclick="verPreview()">Previsualizar</button>
+    </div>
+
+    <div id="msg-preview" style="display:none">
+      <p class="section-title" style="margin-bottom:6px">Vista previa</p>
+      <div class="preview-box" id="preview-box"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SAVED ═══ -->
   <div class="panel" id="panel-saved">
     <div class="action-row">
       <button class="btn btn-outline" onclick="exportarTodos()">Exportar todo</button>
@@ -209,6 +249,43 @@
 const DEFAULT_MAX = 8;
 const STORAGE_KEY = 'dni_registros';
 const MAX_KEY     = 'dni_max';
+const HEAD_KEY    = 'msg_head';
+const FOOT_KEY    = 'msg_foot';
+
+const DEFAULT_HEAD = `📢 *DIV. INTERVENCIÓN CIUDADANA 1 (DIC)*
+
+*FECHA:* 
+*HORA:*   
+
+*JEFE DPTO. INTERVENCION CIUDADANA (DIC 1)* 
+//
+
+*JEFE DIV. INTERVENCION CIUDADANA 1 (DIC):*
+Crío Jael Bonavota 
+
+*OFICIAL DE SERVICIO:*
+//
+
+*JEFE DE TERCIO:*
+Sgto Ayte. Fiscina Matías 
+
+*PUNTO ASIGNADO:*
+Móvil 2354 Cría 5ta 
+
+*RECURSO DIC1:*
+Chófer 
+Sop Alemán Roberto (DIC1) 
+Custodio 
+Sgto Guaymas Emanuel (DIC-1)
+Refuerzo 
+Agte Ovando Eugenia (DIC-1)
+
+*NOVEDADES* 
+Informo que se realizó identificación de Persona con el siguiente resultado 
+`;
+
+const DEFAULT_FOOT = `*INFORMANTE:* 
+Sgto Guaymas Emanuel (DIC-1)`;
 
 let html5QrCode   = null;
 let scanning      = false;
@@ -293,8 +370,9 @@ function parsearDNI(texto) {
     nacimiento:  limpiar(nacimiento),
     vencimiento: limpiar(vencimiento),
     codigo:      limpiar(codigo),
-    nacionalidad: '', lugar: '', domicilio: '',
-    localidad: '', provincia: '', cuil: '',
+    domicilio:   '',
+    codigo_dic:  '',
+    nacionalidad: '', lugar: '', localidad: '', provincia: '', cuil: '',
     fuente, ts: new Date().toISOString()
   };
 }
@@ -412,9 +490,11 @@ function renderSessionBar() {
 
 function renderSessionList(nuevoIdx = -1) {
   const cont = document.getElementById('session-list');
+  if (!sesionDNI.length) { cont.innerHTML = ''; return; }
   cont.innerHTML = sesionDNI.map((d, i) => {
     const esNuevo = i === nuevoIdx;
     const id = `si-datos-${i}`;
+    const cod = d.codigo_dic || '';
     return `
     <div class="session-item ${esNuevo ? 'nuevo' : ''}" id="si-${i}">
       <div class="si-header" onclick="toggleDatos(${i})">
@@ -424,6 +504,7 @@ function renderSessionList(nuevoIdx = -1) {
           <div class="si-meta">
             <span>DNI ${esc(d.dni)}</span>
             ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
+            ${cod ? `<span style="color:var(--warn);font-weight:600">${esc(cod)}</span>` : ''}
             <span style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;font-size:10px;padding:0 4px">${esc(d.fuente)}</span>
           </div>
         </div>
@@ -445,10 +526,24 @@ function renderSessionList(nuevoIdx = -1) {
           <div class="si-field"><label>Vencimiento</label><span>${esc(d.vencimiento) || '—'}</span></div>
           <div class="si-field"><label>Fuente</label><span>${esc(d.fuente)}</span></div>
         </div>
-        ${d.codigo ? `<div class="si-field"><label>Código de trámite</label><span>${esc(d.codigo)}</span></div>` : ''}
-        ${d.nacionalidad ? `<div class="si-field-row"><div class="si-field"><label>Nacionalidad</label><span>${esc(d.nacionalidad)}</span></div><div class="si-field" style="grid-column:span 2"><label>Lugar de nacimiento</label><span>${esc(d.lugar) || '—'}</span></div></div>` : ''}
-        ${d.domicilio ? `<div class="si-field"><label>Domicilio</label><span>${esc(d.domicilio)}${d.localidad ? ', ' + esc(d.localidad) : ''}${d.provincia ? ' — ' + esc(d.provincia) : ''}</span></div>` : ''}
-        ${d.cuil ? `<div class="si-field"><label>CUIL / CUIT</label><span>${esc(d.cuil)}</span></div>` : ''}
+
+        <div class="si-field">
+          <label>Domicilio (para el mensaje)</label>
+          <input type="text" id="dom-${i}" value="${esc(d.domicilio || '')}"
+                 placeholder="Calle N°, Barrio, Localidad"
+                 oninput="setDomicilio(${i}, this.value)">
+        </div>
+        <div class="si-field">
+          <label>Código</label>
+          <select id="cod-${i}" onchange="setCodigoDic(${i}, this.value)">
+            <option value="" ${!cod?'selected':''}>— sin código —</option>
+            <option value="AZUL"   ${cod==='AZUL'?'selected':''}>AZUL</option>
+            <option value="NEGRO"  ${cod==='NEGRO'?'selected':''}>NEGRO</option>
+            <option value="BLANCO" ${cod==='BLANCO'?'selected':''}>BLANCO</option>
+            <option value="ROJO"   ${cod==='ROJO'?'selected':''}>ROJO</option>
+          </select>
+        </div>
+
         <div class="si-actions">
           <button class="si-copy-btn" onclick="copiarDeSesion(${i})">Copiar</button>
           <button class="si-copy-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
@@ -470,10 +565,40 @@ function toggleDatos(i) {
   document.getElementById(`toggle-${i}`).classList.toggle('open');
 }
 
+function setDomicilio(i, val) {
+  if (sesionDNI[i]) sesionDNI[i].domicilio = val.trim().toUpperCase();
+  renderMensajePersonas();
+}
+function setCodigoDic(i, val) {
+  if (sesionDNI[i]) sesionDNI[i].codigo_dic = val;
+  // refrescar sólo el badge de la lista (sin perder foco)
+  const meta = document.querySelector(`#si-${i} .si-meta`);
+  if (meta) {
+    const spans = meta.querySelectorAll('span');
+    // busca un span con color warn y actualiza/elimina
+    let found = false;
+    spans.forEach(s => {
+      if (s.style.color === 'var(--warn)') {
+        if (val) { s.textContent = val; found = true; }
+        else s.remove();
+      }
+    });
+    if (!found && val) {
+      const s = document.createElement('span');
+      s.style.color = 'var(--warn)';
+      s.style.fontWeight = '600';
+      s.textContent = val;
+      meta.insertBefore(s, meta.children[2] || null);
+    }
+  }
+  renderMensajePersonas();
+}
+
 function quitarDeSesion(idx) {
   sesionDNI.splice(idx, 1);
   renderSessionBar();
   renderSessionList();
+  renderMensajePersonas();
   if (!sesionDNI.length) document.getElementById('session-section').style.display = 'none';
   refrescarControles();
   actualizarHint();
@@ -492,17 +617,11 @@ function guardarSesion() {
   toast(repetidos
     ? `${nuevos} guardados · ${repetidos} ya existían`
     : `${nuevos} DNI guardados`);
-  limpiarSesion();
 }
 
-function copiarSesion() {
-  if (!sesionDNI.length) { toast('No hay DNI en la sesión'); return; }
-  const txt = sesionDNI.map((d, i) =>
-    `[${i + 1}] ${d.apellido}, ${d.nombre} | DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`
-  ).join('\n');
-  navigator.clipboard.writeText(txt)
-    .then(() => toast('Datos copiados al portapapeles'))
-    .catch(() => toast('No se pudo copiar'));
+function copiarDeSesion(idx) {
+  const d = sesionDNI[idx];
+  if (d) copiarDatos(d);
 }
 
 function limpiarSesion() {
@@ -511,6 +630,7 @@ function limpiarSesion() {
   cooldown = false;
   document.getElementById('session-bar').style.display = 'none';
   document.getElementById('session-section').style.display = 'none';
+  renderMensajePersonas();
 
   const terminar = () => {
     scanning = false;
@@ -541,22 +661,22 @@ function guardarManual() {
     nacimiento:   document.getElementById('m-nac').value.trim(),
     vencimiento:  document.getElementById('m-venc').value.trim(),
     codigo:       document.getElementById('m-codigo').value.trim(),
-    nacionalidad: document.getElementById('m-nacionalidad').value.trim().toUpperCase(),
-    lugar:        document.getElementById('m-lugar').value.trim().toUpperCase(),
     domicilio:    document.getElementById('m-domicilio').value.trim().toUpperCase(),
     localidad:    document.getElementById('m-localidad').value.trim().toUpperCase(),
     provincia:    document.getElementById('m-provincia').value.trim().toUpperCase(),
     cuil:         document.getElementById('m-cuil').value.trim(),
+    codigo_dic:   '',
+    nacionalidad: '', lugar: '',
     fuente: 'Manual',
     ts: new Date().toISOString()
   };
 
   if (sesionActiva && sesionDNI.length < getMax()) {
     if (sesionDNI.some(d => d.dni === datos.dni)) { toast('Ese DNI ya está en la sesión'); return; }
-    const nuevoIdx = sesionDNI.length;
     sesionDNI.push(datos);
     renderSessionBar();
-    renderSessionList(nuevoIdx);
+    renderSessionList();
+    renderMensajePersonas();
     document.getElementById('session-section').style.display = 'block';
     switchTab('scan');
     toast('Agregado a la sesión actual');
@@ -569,7 +689,7 @@ function guardarManual() {
   }
 
   ['m-apellido','m-nombre','m-sexo','m-dni','m-ejemplar','m-nac','m-venc',
-   'm-codigo','m-nacionalidad','m-lugar','m-domicilio','m-localidad','m-provincia','m-cuil']
+   'm-codigo','m-domicilio','m-localidad','m-provincia','m-cuil']
     .forEach(id => document.getElementById(id).value = '');
 }
 
@@ -594,33 +714,31 @@ function borrarTodos() {
   toast('Registros eliminados');
 }
 
-function copiarDeSesion(idx) {
-  const d = sesionDNI[idx];
-  if (d) copiarDatos(d);
-}
-
 function copiarGuardado(idx) {
   const d = cargarLista()[idx];
   if (d) copiarDatos(d);
 }
 
-function copiarDatos(datos) {
-  const txt = [
-    `APELLIDO: ${datos.apellido}`,
-    `NOMBRE: ${datos.nombre}`,
+function formatearDatos(datos) {
+  const nom = `${datos.apellido || ''}, ${datos.nombre || ''}`.trim().replace(/,$/,'');
+  return [
+    nom,
     `DNI: ${datos.dni}`,
-    datos.sexo         ? `SEXO: ${datos.sexo}` : '',
-    datos.nacimiento   ? `NACIMIENTO: ${datos.nacimiento}` : '',
-    datos.vencimiento  ? `VENCIMIENTO: ${datos.vencimiento}` : '',
-    datos.ejemplar     ? `EJEMPLAR: ${datos.ejemplar}` : '',
-    datos.codigo       ? `CODIGO TRAMITE: ${datos.codigo}` : '',
-    datos.nacionalidad ? `NACIONALIDAD: ${datos.nacionalidad}` : '',
-    datos.lugar        ? `LUGAR NACIMIENTO: ${datos.lugar}` : '',
-    datos.domicilio    ? `DOMICILIO: ${datos.domicilio}` : '',
-    datos.localidad    ? `LOCALIDAD: ${datos.localidad}` : '',
-    datos.provincia    ? `PROVINCIA: ${datos.provincia}` : '',
-    datos.cuil         ? `CUIL/CUIT: ${datos.cuil}` : '',
+    datos.sexo        ? `SEXO: ${datos.sexo}` : '',
+    datos.nacimiento  ? `NACIMIENTO: ${datos.nacimiento}` : '',
+    datos.vencimiento ? `VENCIMIENTO: ${datos.vencimiento}` : '',
+    datos.ejemplar    ? `EJEMPLAR: ${datos.ejemplar}` : '',
+    datos.codigo      ? `CODIGO TRAMITE: ${datos.codigo}` : '',
+    datos.domicilio   ? `DOMICILIO: ${datos.domicilio}` : '',
+    datos.localidad   ? `LOCALIDAD: ${datos.localidad}` : '',
+    datos.provincia   ? `PROVINCIA: ${datos.provincia}` : '',
+    datos.cuil        ? `CUIL/CUIT: ${datos.cuil}` : '',
+    datos.codigo_dic  ? `CODIGO: ${datos.codigo_dic}` : '',
   ].filter(Boolean).join('\n');
+}
+
+function copiarDatos(datos) {
+  const txt = formatearDatos(datos);
   navigator.clipboard.writeText(txt)
     .then(() => toast('Datos copiados'))
     .catch(() => toast('No se pudo copiar'));
@@ -640,9 +758,11 @@ function renderSaved() {
       <div class="s-meta">
         <span>DNI ${esc(d.dni)}</span>
         ${d.sexo ? `<span>${esc(d.sexo)}</span>` : ''}
+        ${d.codigo_dic ? `<span style="color:var(--warn);font-weight:600">${esc(d.codigo_dic)}</span>` : ''}
         <span>${esc(d.fuente)}</span>
         <span>${new Date(d.ts).toLocaleDateString('es-AR')}</span>
       </div>
+      ${d.domicilio ? `<div class="s-meta"><span>Dlio ${esc(d.domicilio)}</span></div>` : ''}
       <div class="s-actions">
         <button class="mini-btn" onclick="copiarGuardado(${i})">Copiar</button>
         <button class="mini-btn del" onclick="borrarRegistro(${i})">Eliminar</button>
@@ -657,9 +777,9 @@ function exportarTodos() {
     `[${i + 1}] ${d.apellido}, ${d.nombre}`,
     `DNI: ${d.dni} | Sexo: ${d.sexo} | Nac: ${d.nacimiento} | Venc: ${d.vencimiento}`,
     `Ejemplar: ${d.ejemplar} | Código trámite: ${d.codigo || '—'} | Fuente: ${d.fuente}`,
-    d.nacionalidad ? `Nacionalidad: ${d.nacionalidad} | Lugar nac.: ${d.lugar || '—'}` : '',
-    d.domicilio    ? `Domicilio: ${d.domicilio}, ${d.localidad || ''} — ${d.provincia || ''}` : '',
-    d.cuil         ? `CUIL/CUIT: ${d.cuil}` : '',
+    d.domicilio  ? `Domicilio: ${d.domicilio}` : '',
+    d.codigo_dic ? `Código: ${d.codigo_dic}` : '',
+    d.cuil       ? `CUIL/CUIT: ${d.cuil}` : '',
     `Registro: ${new Date(d.ts).toLocaleString('es-AR')}`,
     ''
   ].filter(Boolean).join('\n')).join('\n');
@@ -673,13 +793,100 @@ function exportarTodos() {
   URL.revokeObjectURL(url);
 }
 
+/* ══════════════ MENSAJE ══════════════ */
+function irAMensaje() {
+  switchTab('mensaje');
+}
+
+function renderMensajePersonas() {
+  const cont = document.getElementById('msg-personas');
+  const cnt  = document.getElementById('msg-count');
+
+  // Combina: personas de la sesión actual (editables) + guardadas (solo lectura mínima)
+  const total = sesionDNI.length;
+  cnt.textContent = total ? `(${total})` : '(vacío)';
+
+  if (!total) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div>Escaneá o agregá personas para verlas acá</div>`;
+    return;
+  }
+
+  cont.innerHTML = sesionDNI.map((d, i) => {
+    const cod = d.codigo_dic || '';
+    return `
+    <div class="msg-person">
+      <div class="mp-header">
+        <div>
+          <div class="mp-name">${esc(d.apellido)}, ${esc(d.nombre)}</div>
+          <div class="mp-dni">DNI ${esc(d.dni)}</div>
+        </div>
+        <button class="mini-btn del" onclick="quitarDeSesion(${i})">Quitar</button>
+      </div>
+      <div class="si-field">
+        <label>Domicilio</label>
+        <input type="text" value="${esc(d.domicilio || '')}"
+               placeholder="Calle N°, Barrio, Localidad"
+               oninput="setDomicilio(${i}, this.value)">
+      </div>
+      <div class="si-field">
+        <label>Código</label>
+        <select onchange="setCodigoDic(${i}, this.value)">
+          <option value="" ${!cod?'selected':''}>— sin código —</option>
+          <option value="AZUL"   ${cod==='AZUL'?'selected':''}>AZUL</option>
+          <option value="NEGRO"  ${cod==='NEGRO'?'selected':''}>NEGRO</option>
+          <option value="BLANCO" ${cod==='BLANCO'?'selected':''}>BLANCO</option>
+          <option value="ROJO"   ${cod==='ROJO'?'selected':''}>ROJO</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function armarMensaje() {
+  const head = document.getElementById('msg-head').value.trim();
+  const foot = document.getElementById('msg-foot').value.trim();
+
+  const personas = sesionDNI.map(d => {
+    const nombre = `${d.apellido || ''} ${d.nombre || ''}`.trim();
+    const dom = (d.domicilio || '').trim() || 'no existe registros';
+    const cod = (d.codigo_dic || '').trim() || '—';
+    return [
+      nombre,
+      `DNI ${d.dni}`,
+      `Dlio ${dom}`,
+      `Código ${cod}`
+    ].join('\n');
+  }).join('\n\n');
+
+  const partes = [head];
+  if (personas) partes.push(personas);
+  if (foot) partes.push(foot);
+  return partes.filter(Boolean).join('\n\n');
+}
+
+function copiarMensaje() {
+  if (!sesionDNI.length) { toast('No hay personas cargadas'); return; }
+  const txt = armarMensaje();
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Mensaje copiado al portapapeles'))
+    .catch(() => toast('No se pudo copiar'));
+}
+
+function verPreview() {
+  const box = document.getElementById('msg-preview');
+  const pre = document.getElementById('preview-box');
+  pre.textContent = armarMensaje() || '(vacío)';
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
 /* ══════════════ TABS ══════════════ */
 function switchTab(tab) {
-  ['scan', 'manual', 'saved'].forEach(t => {
+  ['scan', 'manual', 'mensaje', 'saved'].forEach(t => {
     document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
     document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
   });
-  if (tab === 'saved') renderSaved();
+  if (tab === 'saved')   renderSaved();
+  if (tab === 'mensaje') renderMensajePersonas();
 }
 
 /* ══════════════ TOAST ══════════════ */
@@ -709,8 +916,18 @@ function toast(msg) {
   };
   cfg.addEventListener('change', persist);
   cfg.addEventListener('blur', persist);
+
+  // Encabezado y pie persistentes
+  const head = document.getElementById('msg-head');
+  const foot = document.getElementById('msg-foot');
+  head.value = localStorage.getItem(HEAD_KEY) || DEFAULT_HEAD;
+  foot.value = localStorage.getItem(FOOT_KEY) || DEFAULT_FOOT;
+  head.addEventListener('input', () => localStorage.setItem(HEAD_KEY, head.value));
+  foot.addEventListener('input', () => localStorage.setItem(FOOT_KEY, foot.value));
+
   refrescarControles();
   actualizarHint();
+  renderMensajePersonas();
 })();
 </script>
 </body>
