@@ -53,11 +53,10 @@
 
   .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted)}
 
-  /* Lista de personas */
   .persona{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;animation:slideIn .25s ease}
   .persona.incompleta{border-left-color:var(--warn)}
   @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-  .persona .p-head{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .persona .p-head{display:flex;align-items:center;gap:4px;justify-content:space-between}
   .persona .p-name{font-size:14px;font-weight:600;word-break:break-word;line-height:1.3}
   .persona .p-dni{font-size:11px;color:var(--text-muted);margin-top:2px}
   .persona .p-badge-ok{color:var(--success);font-weight:700;font-size:12px}
@@ -71,14 +70,12 @@
   .persona .p-field select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;padding:7px 9px;width:100%;outline:none}
   .persona .p-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
-  /* Upload zone */
   .upload-zone{background:var(--surface);border:2px dashed var(--border);border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
   .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--surface2)}
   .upload-zone .uz-icon{font-size:38px;margin-bottom:6px}
   .upload-zone .uz-title{font-size:14px;font-weight:600;margin-bottom:4px}
   .upload-zone .uz-sub{font-size:12px;color:var(--text-muted)}
 
-  /* Progreso */
   .progreso{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:none;flex-direction:column;gap:8px}
   .progreso.show{display:flex}
   .progreso .pr-txt{font-size:12px;display:flex;justify-content:space-between;gap:10px}
@@ -86,7 +83,6 @@
   .progreso .pr-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
   .progreso .pr-fill{height:100%;background:var(--accent);width:0%;transition:width .2s}
 
-  /* Preview */
   .preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text-muted);max-height:300px;overflow:auto}
 
   .empty-state{text-align:center;color:var(--text-muted);font-size:14px;padding:30px 0}
@@ -97,6 +93,13 @@
 
   .contador{font-size:12px;color:var(--text-muted);text-align:center}
   .contador strong{color:var(--text)}
+
+  /* Modal texto OCR */
+  .ocr-texto-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .ocr-texto-overlay.show{display:flex}
+  .ocr-texto-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;gap:12px}
+  .ocr-texto-modal h3{font-size:15px;font-weight:600}
+  .ocr-texto-modal pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text);overflow:auto;flex:1;max-height:60vh}
 </style>
 </head>
 <body>
@@ -168,6 +171,18 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Modal texto OCR -->
+<div class="ocr-texto-overlay" id="ocr-texto-overlay" onclick="if(event.target===this)cerrarTextoOCR()">
+  <div class="ocr-texto-modal">
+    <h3 id="ocr-texto-titulo">Texto crudo del OCR</h3>
+    <pre id="ocr-texto-contenido"></pre>
+    <div class="action-row">
+      <button class="btn btn-outline" onclick="cerrarTextoOCR()">Cerrar</button>
+      <button class="btn btn-primary" onclick="reprocesarOCR()">Reintentar lectura</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════ ESTADO ══════════════ */
 const STORAGE_KEY = 'personas_capturas';
@@ -212,6 +227,7 @@ Sgto Guaymas Emanuel (DIC-1)`;
 let personas = [];
 let tesseractWorker = null;
 let procesando = false;
+let archivosOriginales = {}; // idx -> File (para reintentar)
 
 /* ══════════════ UTILIDADES ══════════════ */
 function esc(s) {
@@ -232,7 +248,14 @@ function personaCompleta(p) {
 
 /* ══════════════ PERSISTENCIA ══════════════ */
 function guardarPersonas() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(personas)); } catch (e) {}
+  try {
+    // Guardamos sin _raw para no llenar localStorage
+    const paraGuardar = personas.map(p => {
+      const { _raw, ...resto } = p;
+      return resto;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(paraGuardar));
+  } catch (e) {}
 }
 function cargarPersonas() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
@@ -294,12 +317,12 @@ async function procesarArchivos(files) {
           continue;
         }
 
-        // Duplicado por DNI
         if (datos.dni && personas.some(p => p.dni === datos.dni)) {
           dupCount++;
           continue;
         }
 
+        const idx = personas.length;
         personas.push({
           apellido:    datos.apellido || '',
           nombre:      datos.nombre || '',
@@ -308,9 +331,11 @@ async function procesarArchivos(files) {
           codigo_dic:  datos.codigo_dic || '',
           sexo:        datos.sexo || '',
           nacimiento:  datos.nacimiento || '',
+          _raw:        datos._raw || '',
           fuente:      'Captura',
           ts:          new Date().toISOString()
         });
+        archivosOriginales[idx] = file;
         okCount++;
         renderTodo();
       } catch (err) {
@@ -336,71 +361,130 @@ async function procesarArchivos(files) {
   }
 }
 
+/* ══════════════ PARSER ROBUSTO ══════════════ */
 function parsearCaptura(texto) {
-  const out = { apellido: '', nombre: '', dni: '', domicilio: '', codigo_dic: '', sexo: '', nacimiento: '' };
+  const out = {
+    apellido: '', nombre: '', dni: '', domicilio: '', codigo_dic: '',
+    sexo: '', nacimiento: '', _raw: texto || ''
+  };
   if (!texto) return out;
 
-  const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  // Normalizar texto: quitar \r, colapsar espacios raros
+  const txt = texto.replace(/\r/g, '').replace(/[ \t\u00A0]+/g, ' ').trim();
+  const lineas = txt.split('\n').map(l => l.trim()).filter(Boolean);
 
-  // Apellido: línea siguiente a "Apellido"
-  for (let i = 0; i < lineas.length - 1; i++) {
-    if (/^apellido\s*:?\s*$/i.test(lineas[i])) {
-      out.apellido = lineas[i + 1].replace(/[^\wÁÉÍÓÚÑ\s]/gi, ' ').trim();
-      break;
-    }
+  // Lista de etiquetas que aparecen solas en la captura del SIPS
+  const ETIQUETAS = [
+    'APELLIDO','NOMBRE','NOMBRE/S','NOMBRES','DOCUMENTO','DNI',
+    'DOMICILIO','CODIGO','CÓDIGO','FECHA DE NAC','FECHA NAC','NACIMIENTO','EDAD',
+    'SEXO','NAC','NACIONALIDAD','LUGAR','EJEMPLAR','TRAMITE','TRÁMITE','EMISION','EMISIÓN',
+    'VENCIMIENTO','NUEVA BUSQUEDA','NUEVA BÚSQUEDA','GOBIERNO','MINISTERIO','POLICIA','POLICÍA',
+    'SIPS','SISTEMA','PROVINCIA','SALTA','ARG','ARGENTINA'
+  ];
+
+  function esEtiquetaSola(linea) {
+    const l = normalizar(linea).replace(/[:\s\.]+$/,'').trim();
+    if (!l || l.length > 30) return false;
+    return ETIQUETAS.some(e => {
+      const ne = normalizar(e);
+      return l === ne || l === ne + ':' || l === ne + '/S';
+    });
   }
-  // Fallback inline "Apellido: LAMAS"
+
+  function contieneEtiqueta(linea) {
+    const l = normalizar(linea);
+    return ETIQUETAS.some(e => {
+      const ne = normalizar(e);
+      return l === ne || l.startsWith(ne + ' ') || l.startsWith(ne + ':') || l.startsWith(ne + '/');
+    });
+  }
+
+  // Extrae valor de etiqueta: misma línea (inline) o siguiente línea no-etiqueta
+  function valorDeEtiqueta(etiquetas) {
+    for (let i = 0; i < lineas.length; i++) {
+      const lin = normalizar(lineas[i]).replace(/[:\s\.]+$/,'').trim();
+      for (const e of etiquetas) {
+        const ne = normalizar(e);
+        if (lin === ne || lin === ne + ':' || lin.startsWith(ne + ' ') || lin.startsWith(ne + ':')) {
+          // Intentar inline: sacar la etiqueta de la línea
+          const resto = lineas[i].replace(
+            new RegExp('^\\s*' + e.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*[:\\-\\/]?\\s*', 'i'),
+            ''
+          ).trim();
+          if (resto && resto.length > 1 && !esEtiquetaSola(resto) && normalizar(resto) !== ne) {
+            return resto;
+          }
+          // Buscar siguiente línea
+          for (let j = i + 1; j < Math.min(lineas.length, i + 4); j++) {
+            if (esEtiquetaSola(lineas[j])) break;
+            if (lineas[j].length > 1 && !contieneEtiqueta(lineas[j])) return lineas[j];
+          }
+        }
+      }
+    }
+    return '';
+  }
+
+  // ── APELLIDO ──
+  out.apellido = valorDeEtiqueta(['Apellido', 'Apellidos']);
   if (!out.apellido) {
-    const m = texto.match(/Apellido\s*[:\-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
+    // Fallback: buscar línea en mayúsculas después de "Apellido" en cualquier parte
+    const m = texto.match(/[Aa]pellido[^\w]{0,5}([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
     if (m) out.apellido = m[1].trim();
   }
 
-  // Nombre
-  for (let i = 0; i < lineas.length - 1; i++) {
-    if (/^nombre\s*:?\s*$/i.test(lineas[i])) {
-      out.nombre = lineas[i + 1].replace(/[^\wÁÉÍÓÚÑ\s]/gi, ' ').trim();
-      break;
-    }
-  }
+  // ── NOMBRE ──
+  out.nombre = valorDeEtiqueta(['Nombre/s', 'Nombres', 'Nombre']);
   if (!out.nombre) {
-    const m = texto.match(/Nombre\s*[:\-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
+    const m = texto.match(/[Nn]ombres?[^\w]{0,5}([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{1,40})/);
     if (m) out.nombre = m[1].trim();
   }
 
-  // DNI: línea siguiente a "Documento" o regex por 8 dígitos
-  for (let i = 0; i < lineas.length - 1; i++) {
-    if (/^documento\s*:?\s*$/i.test(lineas[i])) {
-      const d = lineas[i + 1].replace(/\./g, '').replace(/\D/g, '');
-      if (/^\d{6,8}$/.test(d)) { out.dni = d; break; }
+  // Limpiar: quitar lo que venga después de un número o etiqueta pegada
+  if (out.apellido) out.apellido = out.apellido.replace(/\s+(DOCUMENTO|DNI|NOMBRE|NOMBRES|DOMICILIO|SEXO|FECHA).*$/i,'').trim();
+  if (out.nombre)   out.nombre   = out.nombre.replace(/\s+(DOCUMENTO|DNI|APELLIDO|DOMICILIO|SEXO|FECHA).*$/i,'').trim();
+
+  // ── DNI ──
+  let dni = valorDeEtiqueta(['Documento', 'DNI']);
+  if (dni) {
+    dni = dni.replace(/\./g, '').replace(/\D/g, '');
+    if (/^\d{6,8}$/.test(dni)) out.dni = dni;
+  }
+  if (!out.dni) {
+    // Buscar "Documento 34244490" o "Documento: 34244490" inline
+    const m = texto.match(/[Dd]ocumento[^\d]{0,10}(\d[\d\.\s]{5,12})/i);
+    if (m) {
+      const d = m[1].replace(/[\s\.]/g, '').replace(/\D/g, '');
+      if (/^\d{6,8}$/.test(d)) out.dni = d;
     }
   }
   if (!out.dni) {
-    const m = texto.match(/Documento[^\d]{0,8}(\d[\d\.]{5,10})/i);
-    if (m) out.dni = m[1].replace(/\./g, '');
-  }
-  if (!out.dni) {
+    // Fallback: número de 7-8 dígitos que no parezca año
     for (const l of lineas) {
       const m = l.match(/(?<!\d)(\d{7,8})(?!\d)/);
       if (m && !/^(19|20)\d{6}$/.test(m[1])) { out.dni = m[1]; break; }
     }
   }
 
-  // Fecha nac + sexo (por si aparecen)
-  const mFecha = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  // ── FECHA NAC ──
+  const mFecha = texto.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
   if (mFecha) out.nacimiento = mFecha[1];
-  const mSexo = texto.match(/\b([MF])\s+(?:ARG|NAC)/i) || texto.match(/Sexo\s*[:\-]?\s*([MF])/i);
+
+  // ── SEXO ──
+  const mSexo = texto.match(/[Ss]exo\s*[:\-]?\s*([MF])\b/i) || texto.match(/\b([MF])\s+(?:ARG|NAC)\b/i);
   if (mSexo) out.sexo = mSexo[1].toUpperCase();
 
-  // Domicilio: desde "Domicilio" hasta "CODIGO" o blank o siguiente etiqueta conocida
-  const etiquetasFin = /^(DOCUMENTO|FECHA|EDAD|SEXO|NAC\.?|CODIGO|C[OÓ]DIGO|APELLIDO|NOMBRE|DNI|NUEVA|GOBIERNO|MINISTERIO|POLIC[IÍ]A|SIPS|SISTEMA)/i;
+  // ── DOMICILIO ──
+  // Bloque desde "Domicilio" hasta "CODIGO" o etiqueta conocida
   for (let i = 0; i < lineas.length; i++) {
-    if (/^domicilio\b/i.test(lineas[i]) || /domicilio\s*:?\s*$/i.test(lineas[i])) {
-      const inline = lineas[i].replace(/^.*?domicilio[:\s]*/i, '').trim();
+    if (/^domicilio\b/i.test(lineas[i]) || /\bdomicilio\s*:?\s*$/i.test(lineas[i])) {
       const partes = [];
+      const inline = lineas[i].replace(/^.*?domicilio[:\s]*/i, '').trim();
       if (inline && !/^domicilio$/i.test(inline)) partes.push(inline);
       for (let j = i + 1; j < lineas.length; j++) {
         if (/c[oó]digo/i.test(lineas[j])) break;
-        if (etiquetasFin.test(lineas[j])) break;
+        // Solo corta si es una etiqueta "pura" sin dígitos (para no cortar calles con números)
+        if (esEtiquetaSola(lineas[j])) break;
         partes.push(lineas[j]);
         if (partes.join(' ').length > 150) break;
       }
@@ -409,16 +493,68 @@ function parsearCaptura(texto) {
           .replace(/\s+/g, ' ')
           .replace(/\s*N[°º]\s*/i, ' N° ')
           .trim();
-        break;
       }
+      break;
     }
   }
 
-  // Código: AZUL/NEGRO/BLANCO/ROJO
+  // ── CÓDIGO ──
   const mCod = texto.match(/C[OÓ]DIGO\s*[:\-]?\s*(AZUL|NEGRO|BLANCO|ROJO)/i);
   if (mCod) out.codigo_dic = mCod[1].toUpperCase();
 
   return out;
+}
+
+/* ══════════════ VER TEXTO OCR ══════════════ */
+let idxTextoOCR = -1;
+
+function verTextoOCR(idx) {
+  const p = personas[idx];
+  if (!p) return;
+  idxTextoOCR = idx;
+  const txt = p._raw || '(no se guardó texto — volvé a procesar la captura)';
+  document.getElementById('ocr-texto-titulo').textContent =
+    `Texto crudo OCR — ${p.apellido || '?'} ${p.nombre || ''}`.trim();
+  document.getElementById('ocr-texto-contenido').textContent = txt;
+  document.getElementById('ocr-texto-overlay').classList.add('show');
+}
+
+function cerrarTextoOCR() {
+  document.getElementById('ocr-texto-overlay').classList.remove('show');
+  idxTextoOCR = -1;
+}
+
+async function reprocesarOCR() {
+  if (idxTextoOCR < 0) { cerrarTextoOCR(); return; }
+  const p = personas[idxTextoOCR];
+  const file = archivosOriginales[idxTextoOCR];
+  if (!file) { toast('No hay imagen original para reintentar'); return; }
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Reintentando...';
+
+  try {
+    const { data: { text } } = await tesseractWorker.recognize(file);
+    const datos = parsearCaptura(text);
+    p.apellido   = datos.apellido || p.apellido;
+    p.nombre     = datos.nombre || p.nombre;
+    p.dni        = datos.dni || p.dni;
+    p.domicilio  = datos.domicilio || p.domicilio;
+    p.codigo_dic = datos.codigo_dic || p.codigo_dic;
+    p.sexo       = datos.sexo || p.sexo;
+    p.nacimiento = datos.nacimiento || p.nacimiento;
+    p._raw       = text;
+
+    document.getElementById('ocr-texto-contenido').textContent = text;
+    renderTodo();
+    toast('✅ Reintento aplicado');
+  } catch (e) {
+    toast('Error al reintentar');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Reintentar lectura';
+  }
 }
 
 /* ══════════════ RENDER ══════════════ */
@@ -467,6 +603,7 @@ function renderLista() {
               : ' <span class="p-badge-falta">⚠️ falta completar</span>'}
           </div>
         </div>
+        <button class="p-del" onclick="verTextoOCR(${i})" title="Ver texto OCR" style="font-size:14px">🔍</button>
         <button class="p-del" onclick="borrarPersona(${i})" title="Quitar">✕</button>
       </div>
       <div class="p-row">
@@ -509,7 +646,6 @@ function editar(idx, campo, valor) {
   personas[idx][campo] = valor;
   guardarPersonas();
 
-  // Refrescar solo el header de esa persona sin perder el foco
   const item = document.getElementById(`per-${idx}`);
   if (!item) return;
   const p = personas[idx];
@@ -522,7 +658,7 @@ function editar(idx, campo, valor) {
     nameEl.textContent = nombre;
   }
   const dniEl = item.querySelector('.p-dni');
-  if (dniEl && (campo === 'dni' || campo === 'sexo' || campo === 'codigo_dic' || campo === 'domicilio' || campo === 'apellido' || campo === 'nombre')) {
+  if (dniEl) {
     dniEl.innerHTML = `
       ${p.dni ? 'DNI ' + esc(p.dni) : ''}
       ${p.dni && p.sexo ? ' · ' : ''}${p.sexo ? esc(p.sexo) : ''}
@@ -536,6 +672,7 @@ function editar(idx, campo, valor) {
 
 function borrarPersona(idx) {
   personas.splice(idx, 1);
+  delete archivosOriginales[idx];
   renderTodo();
   toast('Persona eliminada');
 }
@@ -544,6 +681,7 @@ function borrarTodas() {
   if (!personas.length) return;
   if (!confirm('¿Borrar todas las personas cargadas?')) return;
   personas = [];
+  archivosOriginales = {};
   renderTodo();
   toast('Listado vacío');
 }
@@ -662,7 +800,6 @@ function toast(msg) {
   head.addEventListener('input', () => localStorage.setItem(HEAD_KEY, head.value));
   foot.addEventListener('input', () => localStorage.setItem(FOOT_KEY, foot.value));
 
-  // Drag & drop
   const zone = document.getElementById('upload-zone');
   ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
     e.preventDefault(); zone.classList.add('dragover');
