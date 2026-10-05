@@ -48,10 +48,23 @@
   .config-row input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;padding:6px 10px;width:70px;text-align:center;outline:none}
   .config-row input:focus{border-color:var(--accent-light)}
 
-  .scanner-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .scanner-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
   #reader{width:100%}
   #reader video{border-radius:0!important}
   .scan-hint{text-align:center;color:var(--text-muted);font-size:13px;padding:8px}
+
+  .scan-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:4}
+  .scan-frame{position:relative;width:82%;aspect-ratio:1.586/1;border:1.5px solid rgba(59,130,246,.55);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
+  .scan-frame .c{position:absolute;width:26px;height:26px;border:3px solid #3b82f6}
+  .scan-frame .tl{top:-3px;left:-3px;border-right:none;border-bottom:none;border-top-left-radius:14px}
+  .scan-frame .tr{top:-3px;right:-3px;border-left:none;border-bottom:none;border-top-right-radius:14px}
+  .scan-frame .bl{bottom:-3px;left:-3px;border-right:none;border-top:none;border-bottom-left-radius:14px}
+  .scan-frame .br{bottom:-3px;right:-3px;border-left:none;border-top:none;border-bottom-right-radius:14px}
+  .scan-frame .hint{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;font-weight:600}
+
+  .flash-btn{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:20px;cursor:pointer;z-index:6;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:0;line-height:1}
+  .flash-btn.show{display:flex}
+  .flash-btn.on{background:var(--warn);border-color:var(--warn);box-shadow:0 0 14px rgba(217,119,6,.8)}
 
   .session-list{display:flex;flex-direction:column;gap:8px}
   .session-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--success);border-radius:10px;overflow:hidden;animation:slideIn .25s ease}
@@ -177,7 +190,19 @@
       <div class="dots" id="s-dots"></div>
     </div>
 
-    <div class="scanner-box"><div id="reader"></div></div>
+    <div class="scanner-box">
+      <div id="reader"></div>
+      <button id="btn-flash" class="flash-btn" onclick="toggleFlash()" title="Flash" aria-label="Flash">🔦</button>
+      <div class="scan-overlay">
+        <div class="scan-frame">
+          <i class="c tl"></i>
+          <i class="c tr"></i>
+          <i class="c bl"></i>
+          <i class="c br"></i>
+          <div class="hint">Colocá el DNI dentro del recuadro</div>
+        </div>
+      </div>
+    </div>
     <p class="scan-hint" id="scan-hint">Configurá el límite e iniciá la sesión para escanear</p>
 
     <div id="cam-controls">
@@ -337,7 +362,8 @@ let sesionActiva  = false;
 let sesionDNI     = [];
 let cooldown      = false;
 let tesseractWorker = null;
-let ocrDatosTemp  = null; // resultado OCR pendiente de aplicar
+let ocrDatosTemp  = null;
+let flashOn       = false;
 
 /* ══════════════ UTILIDADES ══════════════ */
 function limpiar(str) { return (str || '').toString().trim().replace(/\s+/g, ' '); }
@@ -483,7 +509,6 @@ async function leerCaptura(file) {
       return;
     }
 
-    // Buscar persona en la sesión por DNI
     let personaIdx = -1;
     if (datos.dni) {
       personaIdx = sesionDNI.findIndex(d => d.dni === datos.dni);
@@ -529,21 +554,16 @@ function parsearCapturaSIPS(texto) {
   const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const norm = lineas.map(l => normalizar(l));
 
-  // ── DNI ──
-  // Buscar "Documento" y tomar los siguientes 8 dígitos (misma línea o siguiente)
   for (let i = 0; i < norm.length; i++) {
     if (/DOCUMENTO/.test(norm[i])) {
-      // misma línea
       let m = texto.match(/Documento[^\d]*(\d[\d\.]{5,10})/i);
       if (m) { out.dni = m[1].replace(/\./g, ''); break; }
-      // siguiente línea
       if (i + 1 < lineas.length) {
         const d = lineas[i + 1].replace(/\./g, '').replace(/\D/g, '');
         if (/^\d{6,8}$/.test(d)) { out.dni = d; break; }
       }
     }
   }
-  // Fallback: cualquier número de 8 dígitos que no parezca fecha
   if (!out.dni) {
     for (const l of lineas) {
       const m = l.match(/(?<!\d)(\d{8})(?!\d)/);
@@ -551,16 +571,12 @@ function parsearCapturaSIPS(texto) {
     }
   }
 
-  // ── DOMICILIO ──
-  // Buscar "Domicilio" y capturar el texto que sigue hasta la próxima etiqueta conocida o "CODIGO"
   const etiquetasFin = /^(DOCUMENTO|FECHA|EDAD|SEXO|NAC\.?|CODIGO|CÓDIGO|APELLIDO|NOMBRE|DNI)/i;
   for (let i = 0; i < norm.length; i++) {
     if (/^DOMICILIO\b/.test(norm[i]) || /DOMICILIO/.test(norm[i])) {
-      // si hay texto después de "Domicilio" en la misma línea
       let inline = lineas[i].replace(/^.*?Domicilio[:\s]*/i, '').trim();
       const partes = [];
       if (inline && !/^DOMICILIO$/i.test(inline)) partes.push(inline);
-      // seguir con las líneas siguientes
       for (let j = i + 1; j < lineas.length; j++) {
         if (/C[OÓ]DIGO/i.test(lineas[j])) break;
         if (etiquetasFin.test(norm[j])) break;
@@ -577,7 +593,6 @@ function parsearCapturaSIPS(texto) {
     }
   }
 
-  // ── CÓDIGO ──
   const mCod = texto.match(/C[OÓ]DIGO\s*[:\-]?\s*(AZUL|NEGRO|BLANCO|ROJO)/i);
   if (mCod) out.codigo_dic = mCod[1].toUpperCase();
 
@@ -598,7 +613,6 @@ function aplicarOCR() {
   renderSessionList();
   toast('✅ Datos aplicados a ' + p.apellido);
 
-  // Ir a la persona y resaltarla
   setTimeout(() => {
     const cards = document.querySelectorAll('.msg-person');
     if (cards[personaIdx]) {
@@ -618,6 +632,35 @@ document.getElementById('ocr-input').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   if (f) leerCaptura(f);
 });
+
+/* ══════════════ FLASH / TORCH ══════════════ */
+function verificarFlash() {
+  const btn = document.getElementById('btn-flash');
+  const video = document.querySelector('#reader video');
+  if (!video || !video.srcObject) { btn.classList.remove('show'); return; }
+  const tracks = video.srcObject.getVideoTracks ? video.srcObject.getVideoTracks() : [];
+  const track = tracks[0];
+  if (!track) { btn.classList.remove('show'); return; }
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  if (caps && caps.torch) btn.classList.add('show');
+  else btn.classList.remove('show');
+}
+
+function toggleFlash() {
+  const btn = document.getElementById('btn-flash');
+  const video = document.querySelector('#reader video');
+  if (!video || !video.srcObject) return;
+  const tracks = video.srcObject.getVideoTracks ? video.srcObject.getVideoTracks() : [];
+  const track = tracks[0];
+  if (!track) return;
+  flashOn = !flashOn;
+  track.applyConstraints({ advanced: [{ torch: flashOn }] })
+    .then(() => btn.classList.toggle('on', flashOn))
+    .catch(() => {
+      flashOn = !flashOn;
+      toast('Este dispositivo no soporta flash');
+    });
+}
 
 /* ══════════════ CONTROL DE BOTONES ══════════════ */
 function refrescarControles() {
@@ -645,8 +688,13 @@ function iniciarCamara() {
     html5QrCode = null;
   }
   html5QrCode = new Html5Qrcode('reader');
-  const config = { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 };
-  const formats = { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.PDF_417] };
+  const config = { fps: 12, aspectRatio: 1.0 };
+  const formats = { formatsToSupport: [
+    Html5QrcodeSupportedFormats.QR_CODE,
+    Html5QrcodeSupportedFormats.PDF_417,
+    Html5QrcodeSupportedFormats.CODE_128,
+    Html5QrcodeSupportedFormats.CODE_39
+  ] };
 
   Html5Qrcode.getCameras()
     .then(cams => {
@@ -656,15 +704,27 @@ function iniciarCamara() {
     .catch(() => {
       return html5QrCode.start({ facingMode: 'environment' }, { ...config, ...formats }, onQRSuccess, () => {});
     })
-    .then(() => { scanning = true; refrescarControles(); actualizarHint(); })
+    .then(() => {
+      scanning = true;
+      refrescarControles();
+      actualizarHint();
+      setTimeout(verificarFlash, 500);
+    })
     .catch(() => { scanning = false; refrescarControles(); toast('No se pudo iniciar la cámara'); });
 }
 
 function pausarCamara() {
   if (!html5QrCode || !scanning) { scanning = false; refrescarControles(); return Promise.resolve(); }
+  flashOn = false;
   return html5QrCode.stop()
     .catch(() => {})
-    .then(() => { scanning = false; refrescarControles(); renderSessionBar(); });
+    .then(() => {
+      scanning = false;
+      refrescarControles();
+      renderSessionBar();
+      const btn = document.getElementById('btn-flash');
+      if (btn) btn.classList.remove('on', 'show');
+    });
 }
 
 function reanudarCamara() {
@@ -676,7 +736,7 @@ function onQRSuccess(decodedText) {
   if (cooldown) return;
 
   const datos = parsearDNI(decodedText);
-  if (!datos) { toast('Código no reconocido como DNI'); return; }
+  if (!datos) { toast('Ni QR ni código de barras reconocido'); return; }
   if (sesionDNI.some(d => d.dni === datos.dni)) { toast(`DNI ${datos.dni} ya escaneado`); return; }
 
   cooldown = true;
@@ -700,7 +760,7 @@ function onQRSuccess(decodedText) {
   if (sesionDNI.length >= max) {
     pausarCamara().then(() => toast(`✅ ${max} DNI completados`));
   } else {
-    toast(`DNI ${sesionDNI.length} de ${max} leído`);
+    toast(`DNI ${sesionDNI.length} de ${max} leído (${datos.fuente})`);
   }
   actualizarHint();
 }
@@ -713,7 +773,7 @@ function actualizarHint() {
   } else if (sesionDNI.length >= max) {
     h.textContent = `Límite de ${max} DNI alcanzado. Guardá o copiá los datos.`;
   } else {
-    h.textContent = `Apuntá al QR del DNI. Próximo: ${sesionDNI.length + 1} de ${max}`;
+    h.textContent = `Apuntá al QR o código de barras del DNI. Próximo: ${sesionDNI.length + 1} de ${max}`;
   }
 }
 
@@ -801,13 +861,6 @@ function toggleDatos(i) {
 
 function setDomicilio(i, val) {
   if (sesionDNI[i]) sesionDNI[i].domicilio = val.trim().toUpperCase();
-  const card = document.querySelectorAll('.msg-person')[i];
-  if (card) {
-    const input = card.querySelector('input');
-    if (input && input.value.toUpperCase() !== sesionDNI[i].domicilio) {
-      // no pisar el input si el usuario está tipeando ahí
-    }
-  }
 }
 
 function setCodigoDic(i, val) {
@@ -850,13 +903,17 @@ function limpiarSesion() {
   sesionActiva = false;
   sesionDNI = [];
   cooldown = false;
+  flashOn = false;
   document.getElementById('session-bar').style.display = 'none';
   document.getElementById('session-section').style.display = 'none';
   renderMensajePersonas();
 
   const terminar = () => {
     scanning = false;
+    flashOn = false;
     if (html5QrCode) { try { html5QrCode.clear(); } catch (e) {} html5QrCode = null; }
+    const btn = document.getElementById('btn-flash');
+    if (btn) btn.classList.remove('on', 'show');
     refrescarControles();
     actualizarHint();
   };
